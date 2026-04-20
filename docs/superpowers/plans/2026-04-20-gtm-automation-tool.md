@@ -14,6 +14,38 @@
 
 ---
 
+## Model Assignments
+
+| Task | Description | Model | Rationale |
+|------|-------------|-------|-----------|
+| 1 | Project scaffolding | **Sonnet** | Running commands, no judgment needed |
+| 2 | TypeScript types | **Sonnet** | Transcribing types from spec |
+| 3 | Logger module | **Sonnet** | Simple module, clear test/impl pattern |
+| 4 | Log export | **Sonnet** | Simple string builder |
+| 5 | Log React context | **Sonnet** | Small React context boilerplate |
+| 6 | Entity builder — Variables | **Sonnet** | Straightforward payload construction |
+| 7 | Entity builder — Triggers | **Sonnet** | Same pattern as Task 6 |
+| 8 | Entity builder — Tags | **Sonnet** | Same pattern, slightly more fields |
+| 9 | Input parser | **Opus** | Complex merging: master mapping lookup + auto-derivation + deduplication |
+| 10 | Conflict detection | **Opus** | Nuanced comparison logic, edge cases |
+| 11 | Auth helper | **Sonnet** | Simple URL builder and token parser |
+| 12 | GTM API service | **Opus** | Retry logic, error handling, many endpoints |
+| 13 | App shell — Wizard navigation | **Opus** | State management for 5 steps, wiring context |
+| 14 | LogPanel component | **Sonnet** | Straightforward React component |
+| 15 | SummaryBar component | **Sonnet** | Very simple display component |
+| 16 | Step1Auth | **Sonnet** | Simple auth redirect, token parse |
+| 17 | Step2Container | **Opus** | Multiple API calls, validation, workspace limit check |
+| 18 | Step3Input | **Opus** | Two modes, JSON validation, master mapping integration |
+| 19 | Step4Preview | **Opus** | Conflict display, skip/overwrite decisions, summary bar |
+| 20 | Step5Execute | **Opus** | Sequential API execution, progress tracking, partial failure, log download |
+| 21 | Integration wiring | **Opus** | Connecting all state across steps |
+| 22 | GA4 Config Tag | **Opus** | Special case handling within execution flow |
+| 23 | Final polish | **Sonnet** | Running build/test commands |
+
+**Summary: 12 Sonnet tasks, 11 Opus tasks.**
+
+---
+
 ## File Structure
 
 ```
@@ -76,7 +108,7 @@
 
 ---
 
-## Task 1: Project Scaffolding
+## Task 1: Project Scaffolding `[Sonnet]`
 
 **Files:**
 - Create: `package.json`, `tsconfig.json`, `vite.config.ts`, `index.html`, `.env.example`, `src/main.tsx`, `src/App.tsx`, `src/App.css`
@@ -218,7 +250,7 @@ git commit -m "chore: scaffold Vite + React + TypeScript project with Vitest"
 
 ---
 
-## Task 2: TypeScript Types
+## Task 2: TypeScript Types `[Sonnet]`
 
 **Files:**
 - Create: `src/types/index.ts`
@@ -430,7 +462,7 @@ git commit -m "feat: add all shared TypeScript types for the GTM Automation Tool
 
 ---
 
-## Task 3: Logger Module
+## Task 3: Logger Module `[Sonnet]`
 
 **Files:**
 - Create: `src/logging/logger.ts`, `src/logging/logger.test.ts`
@@ -656,7 +688,7 @@ git commit -m "feat: add centralized logger with console output and in-memory st
 
 ---
 
-## Task 4: Log Export
+## Task 4: Log Export `[Sonnet]`
 
 **Files:**
 - Create: `src/logging/logExport.ts`, `src/logging/logExport.test.ts`
@@ -818,7 +850,7 @@ git commit -m "feat: add log file export with session header and formatted entri
 
 ---
 
-## Task 5: Log React Context
+## Task 5: Log React Context `[Sonnet]`
 
 **Files:**
 - Create: `src/logging/LogContext.tsx`
@@ -889,7 +921,7 @@ git commit -m "feat: add React context provider for logger state"
 
 ---
 
-## Task 6: Entity Builder — Variables
+## Task 6: Entity Builder — Variables `[Sonnet]`
 
 **Files:**
 - Create: `src/services/entityBuilder.ts`, `src/services/entityBuilder.test.ts`
@@ -1013,7 +1045,7 @@ git commit -m "feat: add variable payload builder with DL- prefix exception supp
 
 ---
 
-## Task 7: Entity Builder — Triggers
+## Task 7: Entity Builder — Triggers `[Sonnet]`
 
 **Files:**
 - Modify: `src/services/entityBuilder.ts`, `src/services/entityBuilder.test.ts`
@@ -1100,7 +1132,7 @@ git commit -m "feat: add trigger payload builder"
 
 ---
 
-## Task 8: Entity Builder — Tags
+## Task 8: Entity Builder — Tags `[Sonnet]`
 
 **Files:**
 - Modify: `src/services/entityBuilder.ts`, `src/services/entityBuilder.test.ts`
@@ -1256,7 +1288,7 @@ git commit -m "feat: add GA4 Event and Configuration tag payload builders"
 
 ---
 
-## Task 9: Input Parser
+## Task 9: Input Parser `[Opus]`
 
 **Files:**
 - Create: `src/services/inputParser.ts`, `src/services/inputParser.test.ts`
@@ -1703,7 +1735,7 @@ git commit -m "feat: add input parser with master mapping lookup and auto-deriva
 
 ---
 
-## Task 10: Conflict Detection
+## Task 10: Conflict Detection `[Opus]`
 
 **Files:**
 - Create: `src/services/conflictDetection.ts`, `src/services/conflictDetection.test.ts`
@@ -1962,7 +1994,7 @@ git commit -m "feat: add conflict detection engine with name matching and parame
 
 ---
 
-## Task 11: GTM API Service — Auth Helper
+## Task 11: GTM API Service — Auth Helper `[Sonnet]`
 
 **Files:**
 - Create: `src/services/auth.ts`, `src/services/auth.test.ts`
@@ -2074,7 +2106,7 @@ git commit -m "feat: add OAuth URL builder and token parser"
 
 ---
 
-## Task 12: GTM API Service — API Calls
+## Task 12: GTM API Service — API Calls `[Opus]`
 
 **Files:**
 - Create: `src/services/gtmApi.ts`, `src/services/gtmApi.test.ts`
@@ -2364,7 +2396,7 @@ git commit -m "feat: add GTM API service with retry logic and typed responses"
 
 ---
 
-## Task 13: App Shell — Wizard Navigation
+## Task 13: App Shell — Wizard Navigation `[Opus]`
 
 **Files:**
 - Modify: `src/App.tsx`
@@ -2614,7 +2646,7 @@ git commit -m "feat: add wizard shell with step navigation and LogProvider"
 
 ---
 
-## Task 14: Shared Component — LogPanel
+## Task 14: Shared Component — LogPanel `[Sonnet]`
 
 **Files:**
 - Create: `src/components/shared/LogPanel.tsx`, `src/components/shared/LogPanel.test.tsx`, `src/components/shared/LogPanel.css`
@@ -2839,7 +2871,7 @@ git commit -m "feat: add on-screen log panel component with collapse/expand"
 
 ---
 
-## Task 15: Shared Component — SummaryBar
+## Task 15: Shared Component — SummaryBar `[Sonnet]`
 
 **Files:**
 - Create: `src/components/shared/SummaryBar.tsx`, `src/components/shared/SummaryBar.test.tsx`
@@ -2936,7 +2968,7 @@ git commit -m "feat: add conflict summary bar component"
 
 ---
 
-## Tasks 16-20: Wizard Step Components
+## Tasks 16-20: Wizard Step Components `[Mixed — see individual tasks]`
 
 Each wizard step (Step1Auth through Step5Execute) follows the same pattern:
 
@@ -2956,7 +2988,7 @@ These are the largest remaining tasks. Each step component wires together the se
 - **Spec Section 11** — Logging Architecture (what to log and when)
 - **Spec Section 14** — Error Handling (error messages per step)
 
-### Task 16: Step1Auth Component
+### Task 16: Step1Auth Component `[Sonnet]`
 
 **Files:**
 - Create: `src/components/Step1Auth.tsx`, `src/components/Step1Auth.test.tsx`, `src/components/Step1Auth.css`
@@ -2968,7 +3000,7 @@ These are the largest remaining tasks. Each step component wires together the se
 - [ ] On error (no token in hash), shows error message
 - [ ] Logs auth events via logger
 
-### Task 17: Step2Container Component
+### Task 17: Step2Container Component `[Opus]`
 
 **Files:**
 - Create: `src/components/Step2Container.tsx`, `src/components/Step2Container.test.tsx`, `src/components/Step2Container.css`
@@ -2983,7 +3015,7 @@ These are the largest remaining tasks. Each step component wires together the se
 - [ ] Creates dated workspace on "Next" click
 - [ ] Logs all API calls and results
 
-### Task 18: Step3Input Component
+### Task 18: Step3Input Component `[Opus]`
 
 **Files:**
 - Create: `src/components/Step3Input.tsx`, `src/components/Step3Input.test.tsx`, `src/components/Step3Input.css`
@@ -2997,7 +3029,7 @@ These are the largest remaining tasks. Each step component wires together the se
 - [ ] "Run Dry Run" button disabled until input is valid
 - [ ] Logs input validation results
 
-### Task 19: Step4Preview Component
+### Task 19: Step4Preview Component `[Opus]`
 
 **Files:**
 - Create: `src/components/Step4Preview.tsx`, `src/components/Step4Preview.test.tsx`, `src/components/Step4Preview.css`
@@ -3010,7 +3042,7 @@ These are the largest remaining tasks. Each step component wires together the se
 - [ ] Shows LogPanel with conflict detection progress
 - [ ] Logs each conflict detection result
 
-### Task 20: Step5Execute Component
+### Task 20: Step5Execute Component `[Opus]`
 
 **Files:**
 - Create: `src/components/Step5Execute.tsx`, `src/components/Step5Execute.test.tsx`, `src/components/Step5Execute.css`
@@ -3027,7 +3059,7 @@ These are the largest remaining tasks. Each step component wires together the se
 
 ---
 
-## Task 21: Integration — Wire Steps Into App Shell
+## Task 21: Integration — Wire Steps Into App Shell `[Opus]`
 
 **Files:**
 - Modify: `src/App.tsx`
@@ -3075,7 +3107,7 @@ git commit -m "feat: wire all step components into the wizard shell"
 
 ---
 
-## Task 22: GA4 Configuration Tag Integration
+## Task 22: GA4 Configuration Tag Integration `[Opus]`
 
 **Files:**
 - Modify: `src/components/Step5Execute.tsx`
@@ -3111,7 +3143,7 @@ git commit -m "feat: add GA4 Configuration Tag creation in execution step"
 
 ---
 
-## Task 23: Final Polish and Full Test Run
+## Task 23: Final Polish and Full Test Run `[Sonnet]`
 
 **Files:**
 - All files
