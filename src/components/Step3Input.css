@@ -1,0 +1,103 @@
+/* Step3Input.css — Styles for S4D Standard / Custom JSON input step. */
+
+.step3-container h2 {
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+.step3-container p {
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.step3-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.step3-tab {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.step3-tab:hover {
+  color: #333;
+}
+
+.step3-tab[aria-selected="true"] {
+  color: #1a73e8;
+  border-bottom-color: #1a73e8;
+}
+
+.step3-preview {
+  background: #f5f7fa;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.step3-field {
+  margin-bottom: 1rem;
+}
+
+.step3-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.step3-textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  font-family: monospace;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.step3-textarea--error {
+  border-color: #d93025;
+}
+
+.step3-file-input {
+  font-size: 0.9rem;
+}
+
+.step3-error {
+  background: #fce8e6;
+  color: #d93025;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.step3-success {
+  background: #e6f4ea;
+  color: #137333;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.step3-actions {
+  margin-top: 1.5rem;
+}
