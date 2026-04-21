@@ -20,3 +20,19 @@ export function buildVariablePayload(variable: MasterMappingVariable): GtmVariab
     ],
   }
 }
+
+export function buildTriggerPayload(triggerName: string, dataLayerEventName: string): GtmTriggerPayload {
+  return {
+    name: triggerName,
+    type: 'customEvent',
+    customEventFilter: [
+      {
+        type: 'equals',
+        parameter: [
+          { type: 'template', key: 'arg0', value: '{{_event}}' },
+          { type: 'template', key: 'arg1', value: dataLayerEventName },
+        ],
+      },
+    ],
+  }
+}
