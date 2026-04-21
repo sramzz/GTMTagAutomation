@@ -1,0 +1,27 @@
+/* Step1Auth.css — Styles for the authentication step. */
+
+.step1-auth h2 {
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+.step1-auth p {
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.auth-error {
+  background: #fce8e6;
+  color: #d93025;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.auth-note {
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: #888;
+}
