@@ -1,0 +1,61 @@
+/* Step2Container.css — Styles for account/container selection step. */
+
+.step2-container h2 {
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+.step2-container p {
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.step2-field {
+  margin-bottom: 1rem;
+}
+
+.step2-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.step2-field select,
+.step2-field input {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.step2-error {
+  background: #fce8e6;
+  color: #d93025;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.step2-inline-error {
+  color: #d93025;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.step2-warning {
+  background: #fef7e0;
+  color: #e37400;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.step2-actions {
+  margin-top: 1.5rem;
+}
