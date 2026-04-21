@@ -28,7 +28,7 @@ function currentPhase(results: ExecutionResult[]): Phase {
 }
 
 export function Step5Execute({
-  accessToken, workspacePath, containerPublicId, conflictResults, sessionInfo, onStartNewOnboarding,
+  accessToken, workspacePath, containerPublicId, measurementId, conflictResults, sessionInfo, onStartNewOnboarding,
 }: Step5ExecuteProps) {
   const { logger, entries } = useLog()
   const [results, setResults] = useState<ExecutionResult[]>([])
@@ -53,6 +53,7 @@ export function Step5Execute({
         setResults(progressResults)
         setActivePhase(currentPhase(progressResults))
       },
+      measurementId,
     )
     setOutcome(executionOutcome)
   }

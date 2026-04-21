@@ -98,6 +98,47 @@ const createdTagEntity: GtmEntity = {
   path: 'accounts/1/containers/1/workspaces/1/tags/15',
 }
 
+const createdGa4ConfigEntity: GtmEntity = {
+  name: 'GA4 - Configuration TAG',
+  type: 'gaawc',
+  path: 'accounts/1/containers/1/workspaces/1/tags/20',
+}
+
+// GA4 Config Tag conflict results for various scenarios
+const ga4ConfigAlreadyCorrect: ConflictResult = {
+  entityName: 'GA4 - Configuration TAG',
+  entityType: 'tag',
+  status: 'ALREADY_CORRECT',
+  decision: null,
+  intendedPayload: {
+    name: 'GA4 - Configuration TAG',
+    type: 'gaawc',
+    parameter: [
+      { key: 'measurementId', type: 'template', value: MEASUREMENT_ID },
+      { key: 'sendPageView', type: 'boolean', value: 'true' },
+    ],
+    firingTriggerId: ['2147479553'],
+  },
+  existingEntity: { name: 'GA4 - Configuration TAG', type: 'gaawc', path: 'accounts/1/containers/1/workspaces/1/tags/20' },
+}
+
+const ga4ConfigConflictOverwrite: ConflictResult = {
+  entityName: 'GA4 - Configuration TAG',
+  entityType: 'tag',
+  status: 'CONFLICT',
+  decision: 'OVERWRITE',
+  intendedPayload: {
+    name: 'GA4 - Configuration TAG',
+    type: 'gaawc',
+    parameter: [
+      { key: 'measurementId', type: 'template', value: MEASUREMENT_ID },
+      { key: 'sendPageView', type: 'boolean', value: 'true' },
+    ],
+    firingTriggerId: ['2147479553'],
+  },
+  existingEntity: { name: 'GA4 - Configuration TAG', type: 'gaawc', path: 'accounts/1/containers/1/workspaces/1/tags/20' },
+}
+
 // --- Mocks ---
 
 const mockCreateVariable = vi.fn<() => Promise<GtmEntity>>()
@@ -181,7 +222,9 @@ describe('Step5Execute', () => {
   // --- Sequential execution: variables -> triggers -> tags ---
 
   it('calls create APIs in correct order: variables then triggers then tags', async () => {
-    renderStep5()
+    // Provide GA4 Config as ALREADY_CORRECT so auto-creation is skipped,
+    // allowing us to test the variable -> trigger -> tag ordering cleanly.
+    renderStep5([variableConflictResult, triggerConflictResult, ga4ConfigAlreadyCorrect, tagConflictResult])
 
     await waitFor(() => {
       expect(screen.getByText(/results/i)).toBeInTheDocument()
@@ -215,7 +258,8 @@ describe('Step5Execute', () => {
   // --- Trigger ID resolution for tags ---
 
   it('replaces __PENDING_TRIGGER_ID__ with actual trigger ID from API response', async () => {
-    renderStep5()
+    // Include GA4 Config as ALREADY_CORRECT so auto-creation doesn't add an extra createTag call
+    renderStep5([variableConflictResult, triggerConflictResult, ga4ConfigAlreadyCorrect, tagConflictResult])
 
     await waitFor(() => {
       expect(mockCreateTag).toHaveBeenCalled()
@@ -237,7 +281,8 @@ describe('Step5Execute', () => {
       existingEntity: { name: 'CE - view_item_list', type: 'customEvent', path: 'accounts/1/containers/1/workspaces/1/triggers/55', triggerId: '55' },
     }
 
-    renderStep5([variableConflictResult, existingTrigger, tagConflictResult])
+    // Include GA4 Config as ALREADY_CORRECT so auto-creation doesn't interfere
+    renderStep5([variableConflictResult, existingTrigger, ga4ConfigAlreadyCorrect, tagConflictResult])
 
     await waitFor(() => {
       expect(mockCreateTag).toHaveBeenCalled()
@@ -249,7 +294,8 @@ describe('Step5Execute', () => {
   })
 
   it('uses existing trigger ID when trigger was CONFLICT with SKIP decision', async () => {
-    renderStep5([variableConflictResult, conflictSkipResult, {
+    // Include GA4 Config as ALREADY_CORRECT so auto-creation doesn't interfere
+    renderStep5([variableConflictResult, conflictSkipResult, ga4ConfigAlreadyCorrect, {
       ...tagConflictResult,
       // This tag references CE - purchase trigger
       entityName: 'GA4 Event - purchase',
@@ -284,7 +330,8 @@ describe('Step5Execute', () => {
   })
 
   it('shows CREATED action for newly created entities', async () => {
-    renderStep5([variableConflictResult])
+    // Include GA4 Config as ALREADY_CORRECT to avoid auto-creation adding extra CREATED rows
+    renderStep5([variableConflictResult, ga4ConfigAlreadyCorrect])
 
     await waitFor(() => {
       expect(screen.getByText('DLV - ecommerce.items')).toBeInTheDocument()
@@ -395,7 +442,8 @@ describe('Step5Execute', () => {
   it('stops execution on first API failure and shows partial results', async () => {
     mockCreateTrigger.mockRejectedValue(new Error('API rate limit exceeded'))
 
-    renderStep5()
+    // Include GA4 Config as ALREADY_CORRECT so auto-creation doesn't interfere with the test
+    renderStep5([variableConflictResult, triggerConflictResult, ga4ConfigAlreadyCorrect, tagConflictResult])
 
     await waitFor(() => {
       // Should show the error row in the results table
@@ -411,7 +459,8 @@ describe('Step5Execute', () => {
   it('shows stopped message with count of successful items', async () => {
     mockCreateTrigger.mockRejectedValue(new Error('API rate limit exceeded'))
 
-    renderStep5()
+    // Include GA4 Config as ALREADY_CORRECT so auto-creation doesn't add to the success count
+    renderStep5([variableConflictResult, triggerConflictResult, ga4ConfigAlreadyCorrect, tagConflictResult])
 
     await waitFor(() => {
       expect(screen.getByText(/stopped at/i)).toBeInTheDocument()
@@ -476,6 +525,88 @@ describe('Step5Execute', () => {
 
     await waitFor(() => {
       expect(mockLogger.success).toHaveBeenCalledWith('GTM-API', expect.stringContaining('complete'))
+    })
+  })
+
+  // --- GA4 Configuration Tag integration ---
+
+  it('auto-creates GA4 Config Tag when not present in conflict results', async () => {
+    // Only event-level entities, no GA4 Config Tag in the list
+    mockCreateTag.mockResolvedValueOnce(createdGa4ConfigEntity)
+      .mockResolvedValueOnce(createdTagEntity)
+
+    renderStep5([variableConflictResult, triggerConflictResult, tagConflictResult])
+
+    await waitFor(() => {
+      // GA4 Config Tag should appear in results
+      expect(screen.getByText('GA4 - Configuration TAG')).toBeInTheDocument()
+    })
+
+    // The first createTag call should be the config tag (auto-created before event tags)
+    const firstTagCall = mockCreateTag.mock.calls[0]
+    const firstTagPayload = firstTagCall[2]
+    expect(firstTagPayload.name).toBe('GA4 - Configuration TAG')
+    expect(firstTagPayload.type).toBe('gaawc')
+    expect(firstTagPayload.parameter).toEqual(
+      expect.arrayContaining([
+        { key: 'measurementId', type: 'template', value: MEASUREMENT_ID },
+      ])
+    )
+  })
+
+  it('creates GA4 Config Tag before event tags', async () => {
+    mockCreateTag.mockResolvedValueOnce(createdGa4ConfigEntity)
+      .mockResolvedValueOnce(createdTagEntity)
+
+    renderStep5([variableConflictResult, triggerConflictResult, tagConflictResult])
+
+    await waitFor(() => {
+      expect(mockCreateTag).toHaveBeenCalledTimes(2)
+    })
+
+    // First createTag call = GA4 Config, second = event tag
+    expect(mockCreateTag.mock.calls[0][2].name).toBe('GA4 - Configuration TAG')
+    expect(mockCreateTag.mock.calls[1][2].name).toBe('GA4 Event - view_item_list')
+  })
+
+  it('skips GA4 Config Tag when it already exists as ALREADY_CORRECT', async () => {
+    renderStep5([variableConflictResult, triggerConflictResult, ga4ConfigAlreadyCorrect, tagConflictResult])
+
+    await waitFor(() => {
+      expect(screen.getByText('GA4 - Configuration TAG')).toBeInTheDocument()
+    })
+
+    // Config tag should be processed as SKIPPED (ALREADY_CORRECT)
+    // and should NOT trigger a separate createTag call for the config tag
+    // The only createTag call should be for the event tag
+    await waitFor(() => {
+      const configCallCount = mockCreateTag.mock.calls.filter(
+        (call: unknown[]) => (call[2] as { name: string }).name === 'GA4 - Configuration TAG'
+      ).length
+      expect(configCallCount).toBe(0)
+    })
+  })
+
+  it('updates GA4 Config Tag when it is a CONFLICT with OVERWRITE decision', async () => {
+    renderStep5([variableConflictResult, triggerConflictResult, ga4ConfigConflictOverwrite, tagConflictResult])
+
+    await waitFor(() => {
+      expect(mockUpdateTag).toHaveBeenCalled()
+    })
+
+    // The updateTag call should be for the GA4 Config Tag
+    const updateCallArgs = mockUpdateTag.mock.calls[0]
+    expect(updateCallArgs[1]).toBe(ga4ConfigConflictOverwrite.existingEntity!.path)
+  })
+
+  it('logs GA4 Config Tag auto-creation', async () => {
+    mockCreateTag.mockResolvedValueOnce(createdGa4ConfigEntity)
+      .mockResolvedValueOnce(createdTagEntity)
+
+    renderStep5([variableConflictResult, triggerConflictResult, tagConflictResult])
+
+    await waitFor(() => {
+      expect(mockLogger.info).toHaveBeenCalledWith('GTM-API', expect.stringContaining('GA4 - Configuration TAG'))
     })
   })
 })
