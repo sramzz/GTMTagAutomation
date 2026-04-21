@@ -3,6 +3,11 @@
 
 import { useState } from 'react'
 import { LogProvider } from './logging/LogContext'
+import { Step1Auth } from './components/Step1Auth'
+import { Step2Container } from './components/Step2Container'
+import { Step3Input } from './components/Step3Input'
+import { Step4Preview } from './components/Step4Preview'
+import { Step5Execute } from './components/Step5Execute'
 import type { GtmContainer, GtmWorkspace, ConflictResult, SessionInfo } from './types'
 import type { EntityLists } from './services/inputParser'
 import './App.css'
@@ -44,39 +49,73 @@ function App() {
 
         <main className="app-main">
           {currentStep === 1 && (
-            <div className="step-content">
-              <h2>Step 1 of 5</h2>
-              <p>Sign in with your Google account to access GTM containers.</p>
-              <button className="btn-primary">Sign in with Google</button>
-            </div>
+            <Step1Auth onAuthenticated={(token) => {
+              setAccessToken(token)
+              setCurrentStep(2)
+            }} />
           )}
 
           {currentStep === 2 && (
-            <div className="step-content">
-              <h2>Step 2 of 5</h2>
-              <p>Select container placeholder</p>
-            </div>
+            <Step2Container
+              accessToken={accessToken!}
+              onContainerSelected={(container, ws, measId) => {
+                setSelectedContainer(container)
+                setWorkspace(ws)
+                setMeasurementId(measId)
+                setSessionInfo({
+                  userEmail: '', // Not available from implicit OAuth flow
+                  accountName: '', // Can be derived later
+                  containerName: container.name,
+                  containerPublicId: container.publicId,
+                  workspaceName: ws.name,
+                  measurementId: measId,
+                })
+                setCurrentStep(3)
+              }}
+            />
           )}
 
           {currentStep === 3 && (
-            <div className="step-content">
-              <h2>Step 3 of 5</h2>
-              <p>Input placeholder</p>
-            </div>
+            <Step3Input
+              measurementId={measurementId}
+              onEntitiesReady={(entities) => {
+                setEntityLists(entities)
+                setCurrentStep(4)
+              }}
+            />
           )}
 
           {currentStep === 4 && (
-            <div className="step-content">
-              <h2>Step 4 of 5</h2>
-              <p>Preview placeholder</p>
-            </div>
+            <Step4Preview
+              accessToken={accessToken!}
+              workspacePath={workspace!.path}
+              entityLists={entityLists!}
+              onConflictsResolved={(results) => {
+                setConflictResults(results)
+                setCurrentStep(5)
+              }}
+            />
           )}
 
           {currentStep === 5 && (
-            <div className="step-content">
-              <h2>Step 5 of 5</h2>
-              <p>Execute placeholder</p>
-            </div>
+            <Step5Execute
+              accessToken={accessToken!}
+              workspacePath={workspace!.path}
+              containerPublicId={selectedContainer!.publicId}
+              measurementId={measurementId}
+              conflictResults={conflictResults}
+              sessionInfo={sessionInfo!}
+              onStartNewOnboarding={() => {
+                // Reset to Step 2 — keep the access token, clear everything else
+                setSelectedContainer(null)
+                setWorkspace(null)
+                setMeasurementId('')
+                setEntityLists(null)
+                setConflictResults([])
+                setSessionInfo(null)
+                setCurrentStep(2)
+              }}
+            />
           )}
         </main>
       </div>
