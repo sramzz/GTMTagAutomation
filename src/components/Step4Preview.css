@@ -1,0 +1,135 @@
+/* Step4Preview.css — Styles for the conflict preview step with collapsible sections. */
+
+.step4-container h2 {
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+.step4-container p {
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.step4-loading {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.step4-error {
+  background: #fce8e6;
+  color: #d93025;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.step4-section {
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.step4-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+  background: none;
+}
+
+.step4-section--create .step4-section-header {
+  background: #e6f4ea;
+  color: #34a853;
+}
+
+.step4-section--conflict .step4-section-header {
+  background: #fef3e0;
+  color: #ea8600;
+}
+
+.step4-section--correct .step4-section-header {
+  background: #f0f0f0;
+  color: #888;
+}
+
+.step4-section-body {
+  padding: 0.5rem 1rem;
+}
+
+.step4-section--create .step4-section-body {
+  background: #f5faf7;
+}
+
+.step4-section--conflict .step4-section-body {
+  background: #fffbf5;
+}
+
+.step4-section--correct .step4-section-body {
+  background: #fafafa;
+}
+
+.step4-entity-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0;
+  font-size: 0.85rem;
+  border-bottom: 1px solid #eee;
+}
+
+.step4-entity-row:last-child {
+  border-bottom: none;
+}
+
+.step4-entity-name {
+  font-weight: 500;
+}
+
+.step4-entity-type {
+  color: #999;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+}
+
+.step4-decisions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.step4-decision-btn {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.step4-decision-btn:hover {
+  background: #f0f0f0;
+}
+
+.step4-decision-active {
+  background: #1a73e8;
+  color: #fff;
+  border-color: #1a73e8;
+}
+
+.step4-decision-active:hover {
+  background: #1557b0;
+}
+
+.step4-actions {
+  margin-top: 1.5rem;
+}
