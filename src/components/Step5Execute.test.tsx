@@ -565,8 +565,8 @@ describe('Step5Execute', () => {
     })
 
     // First createTag call = GA4 Config, second = event tag
-    expect(mockCreateTag.mock.calls[0][2].name).toBe('GA4 - Configuration TAG')
-    expect(mockCreateTag.mock.calls[1][2].name).toBe('GA4 Event - view_item_list')
+    expect((mockCreateTag.mock.calls[0] as [string, string, { name: string }])[2].name).toBe('GA4 - Configuration TAG')
+    expect((mockCreateTag.mock.calls[1] as [string, string, { name: string }])[2].name).toBe('GA4 Event - view_item_list')
   })
 
   it('skips GA4 Config Tag when it already exists as ALREADY_CORRECT', async () => {
@@ -595,7 +595,7 @@ describe('Step5Execute', () => {
     })
 
     // The updateTag call should be for the GA4 Config Tag
-    const updateCallArgs = mockUpdateTag.mock.calls[0]
+    const updateCallArgs = mockUpdateTag.mock.calls[0] as [string, string, unknown]
     expect(updateCallArgs[1]).toBe(ga4ConfigConflictOverwrite.existingEntity!.path)
   })
 

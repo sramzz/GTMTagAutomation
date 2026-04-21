@@ -2,7 +2,7 @@
 // All tests use mocked fetch — we never call the real Google API in tests.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { listAccounts, listContainers, listWorkspaces, createWorkspace, listVariables, createVariable, createTrigger, createTag, updateVariable, updateTrigger, updateTag } from './gtmApi'
+import { listAccounts, listContainers, createWorkspace } from './gtmApi'
 
 const mockToken = 'ya29.fake-token'
 

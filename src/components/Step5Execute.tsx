@@ -5,7 +5,7 @@ import { useLog } from '../logging/LogContext'
 import { downloadLogFile } from '../logging/logExport'
 import { LogPanel } from './shared/LogPanel'
 import { executeAll, type ExecutionOutcome } from '../services/executeEntities'
-import type { ConflictResult, ExecutionResult, SessionInfo, EntityType } from '../types'
+import type { ConflictResult, ExecutionResult, SessionInfo } from '../types'
 import './Step5Execute.css'
 
 interface Step5ExecuteProps {

@@ -32,9 +32,10 @@ function entitiesMatch(intended: IntendedPayload, existing: GtmEntity): boolean 
   if (intended.type !== existing.type) return false
 
   if ('parameter' in intended && intended.parameter) {
-    const simpleParams = intended.parameter.filter(
-      (p): p is GtmParameter => typeof p.value === 'string'
-    )
+    // Filter out list-type params (like eventParameters) — only compare simple key/value params.
+    // Cast needed because TS can't narrow the union through .filter() on a union-typed array.
+    const simpleParams = (intended.parameter as readonly { type: string; key: string; value?: string }[])
+      .filter((p): p is GtmParameter => 'value' in p && typeof p.value === 'string')
     return parametersMatch(simpleParams, existing.parameter)
   }
 
