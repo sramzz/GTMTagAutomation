@@ -1,0 +1,790 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "source": "GTM_Master_Mapping.xlsx",
+    "description": "S4D standard GTM mapping. Feed to the GTM Automation Tool as the default mapping. Each entry defines how one data layer event maps to GTM variables, a trigger, and a GA4 tag.",
+    "statusValues": {
+      "LIVE": "Create DLV variables, Custom Event trigger, and GA4 Event tag.",
+      "SYSTEM": "Create DLV variables and Custom Event trigger only. No GA4 Event tag.",
+      "SKIP": "Do not create anything. GTM built-in triggers or out-of-scope third-party tags."
+    },
+    "namingConventions": {
+      "variable": "DLV - {data_layer_path}",
+      "trigger": "CE - {event_name}",
+      "tag": "GA4 Event - {ga4_event_name}",
+      "configTag": "GA4 - Configuration TAG"
+    },
+    "totalEvents": 42,
+    "liveEvents": 28,
+    "systemEvents": 3,
+    "skipEvents": 11
+  },
+  "events": [
+    {
+      "id": 1,
+      "category": "E-COMMERCE: PRODUCT DISCOVERY",
+      "dataLayerEvent": "view_item_list",
+      "ga4EventName": "view_item_list",
+      "whenItFires": "User clicks 'see products', changes category, or switches from offers to products",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "ecommerce.items", "gtmVarName": "DLV - ecommerce.items" }
+      ],
+      "gtmTriggerName": "CE - view_item_list",
+      "gtmTagName": "GA4 Event - view_item_list",
+      "ga4Parameters": [
+        { "paramName": "items", "gtmVarRef": "{{DLV - ecommerce.items}}" }
+      ]
+    },
+    {
+      "id": 2,
+      "category": "E-COMMERCE: PRODUCT DISCOVERY",
+      "dataLayerEvent": "select_item",
+      "ga4EventName": "select_item",
+      "whenItFires": "User clicks on a product to add it or see details",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "ecommerce.affiliation", "gtmVarName": "DLV - ecommerce.affiliation" },
+        { "dlvPath": "ecommerce.items", "gtmVarName": "DLV - ecommerce.items" }
+      ],
+      "gtmTriggerName": "CE - select_item",
+      "gtmTagName": "GA4 Event - select_item",
+      "ga4Parameters": [
+        { "paramName": "items", "gtmVarRef": "{{DLV - ecommerce.items}}" },
+        { "paramName": "affiliation", "gtmVarRef": "{{DLV - ecommerce.affiliation}}" }
+      ]
+    },
+    {
+      "id": 3,
+      "category": "E-COMMERCE: PRODUCT DISCOVERY",
+      "dataLayerEvent": "view_item",
+      "ga4EventName": "view_item",
+      "whenItFires": "User views product detail page",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "ecommerce.affiliation", "gtmVarName": "DLV - ecommerce.affiliation" },
+        { "dlvPath": "ecommerce.items", "gtmVarName": "DLV - ecommerce.items" }
+      ],
+      "gtmTriggerName": "CE - view_item",
+      "gtmTagName": "GA4 Event - view_item",
+      "ga4Parameters": [
+        { "paramName": "items", "gtmVarRef": "{{DLV - ecommerce.items}}" },
+        { "paramName": "affiliation", "gtmVarRef": "{{DLV - ecommerce.affiliation}}" }
+      ]
+    },
+    {
+      "id": 4,
+      "category": "E-COMMERCE: PRODUCT DISCOVERY",
+      "dataLayerEvent": "search",
+      "ga4EventName": "search",
+      "whenItFires": "User triggers search and selects a suggestion",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "search_term", "gtmVarName": "DLV - search_term" },
+        { "dlvPath": "search_term_selected", "gtmVarName": "DLV - search_term_selected" }
+      ],
+      "gtmTriggerName": "CE - search (NEW)",
+      "gtmTagName": "GA4 Event - search (NEW)",
+      "ga4Parameters": [
+        { "paramName": "search_term", "gtmVarRef": "{{DLV - search_term}}" },
+        { "paramName": "search_term_selected", "gtmVarRef": "{{DLV - search_term_selected}}" }
+      ]
+    },
+    {
+      "id": 5,
+      "category": "E-COMMERCE: CART",
+      "dataLayerEvent": "add_to_cart",
+      "ga4EventName": "add_to_cart",
+      "whenItFires": "Product/promotion added from listing or detail pages",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "ecommerce.currency", "gtmVarName": "DLV - ecommerce.currency" },
+        { "dlvPath": "ecommerce.value", "gtmVarName": "DLV - ecommerce.value" },
+        { "dlvPath": "ecommerce.affiliation", "gtmVarName": "DLV - ecommerce.affiliation" },
+        { "dlvPath": "ecommerce.promotion_id", "gtmVarName": "DLV - ecommerce.promotion_id" },
+        { "dlvPath": "ecommerce.promotion_name", "gtmVarName": "DLV - ecommerce.promotion_name" },
+        { "dlvPath": "ecommerce.items", "gtmVarName": "DLV - ecommerce.items" }
+      ],
+      "gtmTriggerName": "CE - add_to_cart",
+      "gtmTagName": "GA4 Event - add_to_cart",
+      "ga4Parameters": [
+        { "paramName": "currency", "gtmVarRef": "{{DLV - ecommerce.currency}}" },
+        { "paramName": "value", "gtmVarRef": "{{DLV - ecommerce.value}}" },
+        { "paramName": "affiliation", "gtmVarRef": "{{DLV - ecommerce.affiliation}}" },
+        { "paramName": "promotion_id", "gtmVarRef": "{{DLV - ecommerce.promotion_id}}" },
+        { "paramName": "promotion_name", "gtmVarRef": "{{DLV - ecommerce.promotion_name}}" },
+        { "paramName": "items", "gtmVarRef": "{{DLV - ecommerce.items}}" }
+      ]
+    },
+    {
+      "id": 6,
+      "category": "E-COMMERCE: CART",
+      "dataLayerEvent": "eecAddToCart",
+      "ga4EventName": "add_to_cart",
+      "whenItFires": "Product added from cross-sell in basket",
+      "status": "LIVE",
+      "notes": "Legacy UA event. Maps to same GA4 event as add_to_cart but with different tag name to distinguish.",
+      "gtmVariables": [
+        { "dlvPath": "ecommerce.currencyCode", "gtmVarName": "DLV - ecommerce.currencyCode" },
+        { "dlvPath": "ecommerce.add.products", "gtmVarName": "DLV - ecommerce.add.products" },
+        { "dlvPath": "ecommerce.add.actionField.list", "gtmVarName": "DLV - ecommerce.add.actionField.list" },
+        { "dlvPath": "size", "gtmVarName": "DLV - size" }
+      ],
+      "gtmTriggerName": "CE - eecAddToCart",
+      "gtmTagName": "GA4 Event - add_to_cart (cross-sell) (NEW)",
+      "ga4Parameters": [
+        { "paramName": "currency", "gtmVarRef": "{{DLV - ecommerce.currencyCode}}" },
+        { "paramName": "items", "gtmVarRef": "{{DLV - ecommerce.add.products}}" },
+        { "paramName": "item_list_name", "gtmVarRef": "{{DLV - ecommerce.add.actionField.list}}" }
+      ]
+    },
+    {
+      "id": 7,
+      "category": "E-COMMERCE: CART",
+      "dataLayerEvent": "remove_from_cart",
+      "ga4EventName": "remove_from_cart",
+      "whenItFires": "Promotion or coupon is removed from cart",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "ecommerce.affiliation", "gtmVarName": "DLV - ecommerce.affiliation" },
+        { "dlvPath": "ecommerce.promotionId", "gtmVarName": "DLV - ecommerce.promotionId" },
+        { "dlvPath": "ecommerce.promotionName", "gtmVarName": "DLV - ecommerce.promotionName" }
+      ],
+      "gtmTriggerName": "CE - remove_from_cart",
+      "gtmTagName": "GA4 Event - remove_from_cart",
+      "ga4Parameters": [
+        { "paramName": "affiliation", "gtmVarRef": "{{DLV - ecommerce.affiliation}}" },
+        { "paramName": "promotion_id", "gtmVarRef": "{{DLV - ecommerce.promotionId}}" },
+        { "paramName": "promotion_name", "gtmVarRef": "{{DLV - ecommerce.promotionName}}" }
+      ]
+    },
+    {
+      "id": 8,
+      "category": "E-COMMERCE: CART",
+      "dataLayerEvent": "eecRemoveFromCart",
+      "ga4EventName": "remove_from_cart",
+      "whenItFires": "Product is removed from cart",
+      "status": "LIVE",
+      "notes": "Legacy UA event. Maps to same GA4 event as remove_from_cart but with different tag name to distinguish.",
+      "gtmVariables": [
+        { "dlvPath": "ecommerce.currencyCode", "gtmVarName": "DLV - ecommerce.currencyCode" },
+        { "dlvPath": "ecommerce.remove.products", "gtmVarName": "DLV - ecommerce.remove.products" }
+      ],
+      "gtmTriggerName": "CE - eecRemoveFromCart",
+      "gtmTagName": "GA4 Event - remove_from_cart (product) (NEW)",
+      "ga4Parameters": [
+        { "paramName": "currency", "gtmVarRef": "{{DLV - ecommerce.currencyCode}}" },
+        { "paramName": "items", "gtmVarRef": "{{DLV - ecommerce.remove.products}}" }
+      ]
+    },
+    {
+      "id": 9,
+      "category": "E-COMMERCE: COUPONS",
+      "dataLayerEvent": "add_coupon",
+      "ga4EventName": "add_coupon",
+      "whenItFires": "User attempts to add a coupon code in checkout",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "coupon_code", "gtmVarName": "DLV - coupon_code" },
+        { "dlvPath": "status", "gtmVarName": "DLV - status" }
+      ],
+      "gtmTriggerName": "CE - add_coupon (NEW)",
+      "gtmTagName": "GA4 Event - add_coupon (NEW)",
+      "ga4Parameters": [
+        { "paramName": "coupon_code", "gtmVarRef": "{{DLV - coupon_code}}" },
+        { "paramName": "status", "gtmVarRef": "{{DLV - status}}" }
+      ]
+    },
+    {
+      "id": 10,
+      "category": "E-COMMERCE: COUPONS",
+      "dataLayerEvent": "couponcode",
+      "ga4EventName": "coupon_applied",
+      "whenItFires": "Coupon code successfully applied in checkout",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "events.Couponcode", "gtmVarName": "DLV - events.Couponcode" },
+        { "dlvPath": "events.Couponname", "gtmVarName": "DLV - events.Couponname" }
+      ],
+      "gtmTriggerName": "CE - couponcode (NEW)",
+      "gtmTagName": "GA4 Event - coupon_applied (NEW)",
+      "ga4Parameters": [
+        { "paramName": "coupon_code", "gtmVarRef": "{{DLV - events.Couponcode}}" },
+        { "paramName": "coupon_name", "gtmVarRef": "{{DLV - events.Couponname}}" }
+      ]
+    },
+    {
+      "id": 11,
+      "category": "E-COMMERCE: CHECKOUT",
+      "dataLayerEvent": "eecCheckout",
+      "ga4EventName": "begin_checkout",
+      "whenItFires": "User enters the checkout",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "ecommerce.currencyCode", "gtmVarName": "DLV - ecommerce.currencyCode" },
+        { "dlvPath": "ecommerce.checkout.products", "gtmVarName": "DLV - ecommerce.checkout.products" },
+        { "dlvPath": "ecommerce.checkout.actionField.step", "gtmVarName": "DLV - ecommerce.checkout.actionField.step" },
+        { "dlvPath": "ecommerce.checkout.actionField.option", "gtmVarName": "DLV - ecommerce.checkout.actionField.option" }
+      ],
+      "gtmTriggerName": "CE - eecCheckout",
+      "gtmTagName": "GA4 Event - begin_checkout",
+      "ga4Parameters": [
+        { "paramName": "currency", "gtmVarRef": "{{DLV - ecommerce.currencyCode}}" },
+        { "paramName": "items", "gtmVarRef": "{{DLV - ecommerce.checkout.products}}" },
+        { "paramName": "checkout_step", "gtmVarRef": "{{DLV - ecommerce.checkout.actionField.step}}" },
+        { "paramName": "checkout_option", "gtmVarRef": "{{DLV - ecommerce.checkout.actionField.option}}" }
+      ]
+    },
+    {
+      "id": 12,
+      "category": "E-COMMERCE: CHECKOUT",
+      "dataLayerEvent": "eecCheckoutOption",
+      "ga4EventName": "checkout_option",
+      "whenItFires": "User changes payment method in checkout",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "checkout_option.step", "gtmVarName": "DLV - checkout_option.step" },
+        { "dlvPath": "checkout_option.option", "gtmVarName": "DLV - checkout_option.option" }
+      ],
+      "gtmTriggerName": "CE - eecCheckoutOption",
+      "gtmTagName": "GA4 Event - checkout_option",
+      "ga4Parameters": [
+        { "paramName": "checkout_step", "gtmVarRef": "{{DLV - checkout_option.step}}" },
+        { "paramName": "checkout_option", "gtmVarRef": "{{DLV - checkout_option.option}}" }
+      ]
+    },
+    {
+      "id": 13,
+      "category": "E-COMMERCE: PURCHASE",
+      "dataLayerEvent": "eecPurchase",
+      "ga4EventName": "purchase",
+      "whenItFires": "Order is placed (payment gateway passes)",
+      "status": "LIVE",
+      "notes": "Uses DL (not DLV) prefix for purchase action fields — these are direct data layer lookups, not Data Layer Variable type. page.currencyCode uses DLV.",
+      "gtmVariables": [
+        { "dlvPath": "ecommerce.purchase.actionField.id", "gtmVarName": "DL - ecommerce.purchase.actionField.id" },
+        { "dlvPath": "ecommerce.purchase.actionField.revenue", "gtmVarName": "DL - ecommerce.purchase.actionField.revenue" },
+        { "dlvPath": "page.currencyCode", "gtmVarName": "DLV - page.currencyCode" },
+        { "dlvPath": "ecommerce.purchase.actionField.tax", "gtmVarName": "DL - ecommerce.purchase.actionField.tax" },
+        { "dlvPath": "ecommerce.purchase.actionField.shipping", "gtmVarName": "DL - ecommerce.purchase.actionField.shipping" },
+        { "dlvPath": "ecommerce.purchase.actionField.coupon", "gtmVarName": "DL - ecommerce.purchase.actionField.coupon" },
+        { "dlvPath": "ecommerce.purchase.actionField.affiliation", "gtmVarName": "DL - ecommerce.purchase.actionField.affiliation" },
+        { "dlvPath": "ecommerce.purchase.products", "gtmVarName": "DL - ecommerce.purchase.products" }
+      ],
+      "gtmTriggerName": "EEC purchase",
+      "gtmTagName": "GA4 Event - purchase",
+      "ga4Parameters": [
+        { "paramName": "transaction_id", "gtmVarRef": "{{DL - ecommerce.purchase.actionField.id}}" },
+        { "paramName": "value", "gtmVarRef": "{{DL - ecommerce.purchase.actionField.revenue}}" },
+        { "paramName": "currency", "gtmVarRef": "{{DLV - page.currencyCode}}" },
+        { "paramName": "tax", "gtmVarRef": "{{DL - ecommerce.purchase.actionField.tax}}" },
+        { "paramName": "shipping", "gtmVarRef": "{{DL - ecommerce.purchase.actionField.shipping}}" },
+        { "paramName": "coupon", "gtmVarRef": "{{DL - ecommerce.purchase.actionField.coupon}}" },
+        { "paramName": "affiliation", "gtmVarRef": "{{DL - ecommerce.purchase.actionField.affiliation}}" },
+        { "paramName": "items", "gtmVarRef": "{{DL - ecommerce.purchase.products}}" }
+      ]
+    },
+    {
+      "id": 14,
+      "category": "PROMOTIONS",
+      "dataLayerEvent": "view_promotion",
+      "ga4EventName": "view_promotion",
+      "whenItFires": "Promotions are visible on screen",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "ecommerce.promotion_id", "gtmVarName": "DLV - ecommerce.promotion_id" },
+        { "dlvPath": "ecommerce.promotion_name", "gtmVarName": "DLV - ecommerce.promotion_name" },
+        { "dlvPath": "ecommerce.creative_name", "gtmVarName": "DLV - ecommerce.creative_name" },
+        { "dlvPath": "ecommerce.creative_slot", "gtmVarName": "DLV - ecommerce.creative_slot" },
+        { "dlvPath": "ecommerce.location_id", "gtmVarName": "DLV - ecommerce.location_id" }
+      ],
+      "gtmTriggerName": "CE - view_promotion",
+      "gtmTagName": "GA4 Event - view_promotion",
+      "ga4Parameters": [
+        { "paramName": "promotion_id", "gtmVarRef": "{{DLV - ecommerce.promotion_id}}" },
+        { "paramName": "promotion_name", "gtmVarRef": "{{DLV - ecommerce.promotion_name}}" },
+        { "paramName": "creative_name", "gtmVarRef": "{{DLV - ecommerce.creative_name}}" },
+        { "paramName": "creative_slot", "gtmVarRef": "{{DLV - ecommerce.creative_slot}}" },
+        { "paramName": "location_id", "gtmVarRef": "{{DLV - ecommerce.location_id}}" }
+      ]
+    },
+    {
+      "id": 15,
+      "category": "PROMOTIONS",
+      "dataLayerEvent": "select_promotion",
+      "ga4EventName": "select_promotion",
+      "whenItFires": "User clicks on a promotion to see details",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "ecommerce.promotion_id", "gtmVarName": "DLV - ecommerce.promotion_id" },
+        { "dlvPath": "ecommerce.promotion_name", "gtmVarName": "DLV - ecommerce.promotion_name" },
+        { "dlvPath": "ecommerce.creative_name", "gtmVarName": "DLV - ecommerce.creative_name" },
+        { "dlvPath": "ecommerce.creative_slot", "gtmVarName": "DLV - ecommerce.creative_slot" },
+        { "dlvPath": "ecommerce.location_id", "gtmVarName": "DLV - ecommerce.location_id" }
+      ],
+      "gtmTriggerName": "CE - select_promotion",
+      "gtmTagName": "GA4 Event - select_promotion",
+      "ga4Parameters": [
+        { "paramName": "promotion_id", "gtmVarRef": "{{DLV - ecommerce.promotion_id}}" },
+        { "paramName": "promotion_name", "gtmVarRef": "{{DLV - ecommerce.promotion_name}}" },
+        { "paramName": "creative_name", "gtmVarRef": "{{DLV - ecommerce.creative_name}}" },
+        { "paramName": "creative_slot", "gtmVarRef": "{{DLV - ecommerce.creative_slot}}" },
+        { "paramName": "location_id", "gtmVarRef": "{{DLV - ecommerce.location_id}}" }
+      ]
+    },
+    {
+      "id": 16,
+      "category": "USER EVENTS",
+      "dataLayerEvent": "login",
+      "ga4EventName": "login",
+      "whenItFires": "User performs a successful login",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "events.method", "gtmVarName": "DLV - events.method" }
+      ],
+      "gtmTriggerName": "CE - login",
+      "gtmTagName": "GA4 Event - login",
+      "ga4Parameters": [
+        { "paramName": "method", "gtmVarRef": "{{DLV - events.method}}" }
+      ]
+    },
+    {
+      "id": 17,
+      "category": "USER EVENTS",
+      "dataLayerEvent": "login_event",
+      "ga4EventName": "login_event",
+      "whenItFires": "Duplicate login event (investigate with devs)",
+      "status": "LIVE",
+      "notes": "Duplicate of login — investigate with dev team whether this can be removed.",
+      "gtmVariables": [
+        { "dlvPath": "events.method", "gtmVarName": "DLV - events.method" }
+      ],
+      "gtmTriggerName": "CE - login_event",
+      "gtmTagName": "GA4 Event - login_event",
+      "ga4Parameters": [
+        { "paramName": "method", "gtmVarRef": "{{DLV - events.method}}" }
+      ]
+    },
+    {
+      "id": 18,
+      "category": "USER EVENTS",
+      "dataLayerEvent": "register",
+      "ga4EventName": "sign_up",
+      "whenItFires": "User clicks register and during verification steps",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "events.method", "gtmVarName": "DLV - events.method" },
+        { "dlvPath": "register_step", "gtmVarName": "DLV - register_step" },
+        { "dlvPath": "register_type", "gtmVarName": "DLV - register_type" },
+        { "dlvPath": "account_type", "gtmVarName": "DLV - account_type" },
+        { "dlvPath": "email_consent", "gtmVarName": "DLV - email_consent" }
+      ],
+      "gtmTriggerName": "CE - register (NEW)",
+      "gtmTagName": "GA4 Event - sign_up (NEW)",
+      "ga4Parameters": [
+        { "paramName": "method", "gtmVarRef": "{{DLV - events.method}}" },
+        { "paramName": "register_step", "gtmVarRef": "{{DLV - register_step}}" },
+        { "paramName": "register_type", "gtmVarRef": "{{DLV - register_type}}" },
+        { "paramName": "account_type", "gtmVarRef": "{{DLV - account_type}}" },
+        { "paramName": "email_consent", "gtmVarRef": "{{DLV - email_consent}}" }
+      ]
+    },
+    {
+      "id": 19,
+      "category": "USER EVENTS",
+      "dataLayerEvent": "account_creation",
+      "ga4EventName": "account_created",
+      "whenItFires": "User finishes registration, account is created",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "events.method", "gtmVarName": "DLV - events.method" }
+      ],
+      "gtmTriggerName": "CE - account_creation (NEW)",
+      "gtmTagName": "GA4 Event - account_created (NEW)",
+      "ga4Parameters": [
+        { "paramName": "method", "gtmVarRef": "{{DLV - events.method}}" }
+      ]
+    },
+    {
+      "id": 20,
+      "category": "NAVIGATION & UI",
+      "dataLayerEvent": "main_navigation_item",
+      "ga4EventName": "main_navigation_item",
+      "whenItFires": "User clicks to go to homepage",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "navigation_click", "gtmVarName": "DLV - navigation_click" }
+      ],
+      "gtmTriggerName": "CE - main_navigation_item",
+      "gtmTagName": "GA4 Event - main_navigation_item",
+      "ga4Parameters": [
+        { "paramName": "navigation_click", "gtmVarRef": "{{DLV - navigation_click}}" }
+      ]
+    },
+    {
+      "id": 21,
+      "category": "NAVIGATION & UI",
+      "dataLayerEvent": "category_navigation_item",
+      "ga4EventName": "category_navigation_item",
+      "whenItFires": "User changes product category or goes to offers",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "navigation_click", "gtmVarName": "DLV - navigation_click" }
+      ],
+      "gtmTriggerName": "CE - category_navigation_item",
+      "gtmTagName": "GA4 Event - category_navigation_item",
+      "ga4Parameters": [
+        { "paramName": "navigation_click", "gtmVarRef": "{{DLV - navigation_click}}" }
+      ]
+    },
+    {
+      "id": 22,
+      "category": "NAVIGATION & UI",
+      "dataLayerEvent": "footer_navigation_item",
+      "ga4EventName": "footer_navigation_item",
+      "whenItFires": "User clicks a footer link",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "navigation_click", "gtmVarName": "DLV - navigation_click" }
+      ],
+      "gtmTriggerName": "CE - footer_navigation_item",
+      "gtmTagName": "GA4 Event - footer_navigation_item",
+      "ga4Parameters": [
+        { "paramName": "navigation_click", "gtmVarRef": "{{DLV - navigation_click}}" }
+      ]
+    },
+    {
+      "id": 23,
+      "category": "NAVIGATION & UI",
+      "dataLayerEvent": "banner_view",
+      "ga4EventName": "banner_view",
+      "whenItFires": "Banner is visible on screen",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "banner_title", "gtmVarName": "DLV - banner_title" },
+        { "dlvPath": "location_id", "gtmVarName": "DLV - location_id" }
+      ],
+      "gtmTriggerName": "CE - banner_view",
+      "gtmTagName": "GA4 Event - banner_view",
+      "ga4Parameters": [
+        { "paramName": "banner_title", "gtmVarRef": "{{DLV - banner_title}}" },
+        { "paramName": "location_id", "gtmVarRef": "{{DLV - location_id}}" }
+      ]
+    },
+    {
+      "id": 24,
+      "category": "NAVIGATION & UI",
+      "dataLayerEvent": "banner_click",
+      "ga4EventName": "banner_click",
+      "whenItFires": "User clicks on a banner",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "banner_title", "gtmVarName": "DLV - banner_title" },
+        { "dlvPath": "location_id", "gtmVarName": "DLV - location_id" }
+      ],
+      "gtmTriggerName": "CE - banner_click",
+      "gtmTagName": "GA4 Event - banner_click",
+      "ga4Parameters": [
+        { "paramName": "banner_title", "gtmVarRef": "{{DLV - banner_title}}" },
+        { "paramName": "location_id", "gtmVarRef": "{{DLV - location_id}}" }
+      ]
+    },
+    {
+      "id": 25,
+      "category": "STORE & DELIVERY",
+      "dataLayerEvent": "store_locator",
+      "ga4EventName": "store_locator",
+      "whenItFires": "User chooses address or finishes localization",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "delivery_method", "gtmVarName": "DLV - delivery_method" },
+        { "dlvPath": "postal_code", "gtmVarName": "DLV - postal_code" },
+        { "dlvPath": "store_id", "gtmVarName": "DLV - store_id" },
+        { "dlvPath": "success", "gtmVarName": "DLV - success" },
+        { "dlvPath": "live_location", "gtmVarName": "DLV - live_location" },
+        { "dlvPath": "timing", "gtmVarName": "DLV - timing" }
+      ],
+      "gtmTriggerName": "CE - store_locator",
+      "gtmTagName": "GA4 Event - store_locator",
+      "ga4Parameters": [
+        { "paramName": "delivery_method", "gtmVarRef": "{{DLV - delivery_method}}" },
+        { "paramName": "postal_code", "gtmVarRef": "{{DLV - postal_code}}" },
+        { "paramName": "store_id", "gtmVarRef": "{{DLV - store_id}}" },
+        { "paramName": "success", "gtmVarRef": "{{DLV - success}}" },
+        { "paramName": "live_location", "gtmVarRef": "{{DLV - live_location}}" },
+        { "paramName": "timing", "gtmVarRef": "{{DLV - timing}}" }
+      ]
+    },
+    {
+      "id": 26,
+      "category": "STORE & DELIVERY",
+      "dataLayerEvent": "store_locator_time_picker",
+      "ga4EventName": "store_locator_time_picker",
+      "whenItFires": "User changes delivery time and accepts",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "location", "gtmVarName": "DLV - location" },
+        { "dlvPath": "store_id", "gtmVarName": "DLV - store_id" },
+        { "dlvPath": "time_slot", "gtmVarName": "DLV - time_slot" }
+      ],
+      "gtmTriggerName": "CE - store_locator_time_picker",
+      "gtmTagName": "GA4 Event - store_locator_time_picker",
+      "ga4Parameters": [
+        { "paramName": "location", "gtmVarRef": "{{DLV - location}}" },
+        { "paramName": "store_id", "gtmVarRef": "{{DLV - store_id}}" },
+        { "paramName": "time_slot", "gtmVarRef": "{{DLV - time_slot}}" }
+      ]
+    },
+    {
+      "id": 27,
+      "category": "CUSTOM INTERACTIONS",
+      "dataLayerEvent": "eventpush",
+      "ga4EventName": "eventpush",
+      "whenItFires": "Generic custom interaction tracking",
+      "status": "LIVE",
+      "gtmVariables": [
+        { "dlvPath": "e_action", "gtmVarName": "DLV - e_action" },
+        { "dlvPath": "e_category", "gtmVarName": "DLV - e_category" },
+        { "dlvPath": "e_type", "gtmVarName": "DLV - e_type" },
+        { "dlvPath": "e_coupon", "gtmVarName": "DLV - e_coupon" }
+      ],
+      "gtmTriggerName": "CE - eventpush",
+      "gtmTagName": "GA4 Event - eventpush",
+      "ga4Parameters": [
+        { "paramName": "e_action", "gtmVarRef": "{{DLV - e_action}}" },
+        { "paramName": "e_category", "gtmVarRef": "{{DLV - e_category}}" },
+        { "paramName": "e_type", "gtmVarRef": "{{DLV - e_type}}" },
+        { "paramName": "e_coupon", "gtmVarRef": "{{DLV - e_coupon}}" }
+      ]
+    },
+    {
+      "id": 28,
+      "category": "PAGE CONTEXT",
+      "dataLayerEvent": "pageInfo",
+      "ga4EventName": "page_context",
+      "whenItFires": "Every page load — enriched with custom dimensions",
+      "status": "LIVE",
+      "notes": "This is a custom S4D page_view enrichment event. It fires on every page and sends custom dimensions that GA4's built-in page_view does not capture.",
+      "gtmVariables": [
+        { "dlvPath": "page.pageType", "gtmVarName": "DLV - page.pageType" },
+        { "dlvPath": "page.primaryCategory", "gtmVarName": "DLV - page.primaryCategory" },
+        { "dlvPath": "page.subCategory", "gtmVarName": "DLV - page.subCategory" },
+        { "dlvPath": "page.pageContent", "gtmVarName": "DLV - page.pageContent" },
+        { "dlvPath": "page.language", "gtmVarName": "DLV - page.language" },
+        { "dlvPath": "page.currencyCode", "gtmVarName": "DLV - page.currencyCode" },
+        { "dlvPath": "user.loginStatus", "gtmVarName": "DLV - user.loginStatus" },
+        { "dlvPath": "user.loyaltyAccount", "gtmVarName": "DLV - user.loyaltyAccount" },
+        { "dlvPath": "user.internalTraffic", "gtmVarName": "DLV - user.internalTraffic" },
+        { "dlvPath": "order.deliveryMethodName", "gtmVarName": "DLV - order.deliveryMethodName" },
+        { "dlvPath": "order.paymentMethod", "gtmVarName": "DLV - order.paymentMethod" },
+        { "dlvPath": "order.store", "gtmVarName": "DLV - order.store" },
+        { "dlvPath": "system.internetChannel", "gtmVarName": "DLV - system.internetChannel" }
+      ],
+      "gtmTriggerName": "CE - pageInfo",
+      "gtmTagName": "GA4 Event - page_context",
+      "ga4Parameters": [
+        { "paramName": "page_type", "gtmVarRef": "{{DLV - page.pageType}}" },
+        { "paramName": "primary_category", "gtmVarRef": "{{DLV - page.primaryCategory}}" },
+        { "paramName": "sub_category", "gtmVarRef": "{{DLV - page.subCategory}}" },
+        { "paramName": "page_content", "gtmVarRef": "{{DLV - page.pageContent}}" },
+        { "paramName": "language", "gtmVarRef": "{{DLV - page.language}}" },
+        { "paramName": "currency_code", "gtmVarRef": "{{DLV - page.currencyCode}}" },
+        { "paramName": "login_status", "gtmVarRef": "{{DLV - user.loginStatus}}" },
+        { "paramName": "loyalty_account", "gtmVarRef": "{{DLV - user.loyaltyAccount}}" },
+        { "paramName": "internal_traffic", "gtmVarRef": "{{DLV - user.internalTraffic}}" },
+        { "paramName": "delivery_method", "gtmVarRef": "{{DLV - order.deliveryMethodName}}" },
+        { "paramName": "payment_method", "gtmVarRef": "{{DLV - order.paymentMethod}}" },
+        { "paramName": "store", "gtmVarRef": "{{DLV - order.store}}" },
+        { "paramName": "internet_channel", "gtmVarRef": "{{DLV - system.internetChannel}}" }
+      ]
+    },
+    {
+      "id": 29,
+      "category": "CONSENT (SYSTEM)",
+      "dataLayerEvent": "OneTrustLoaded",
+      "ga4EventName": null,
+      "whenItFires": "OneTrust consent banner loaded",
+      "status": "SYSTEM",
+      "notes": "Create DLV and trigger only. No GA4 Event tag. This trigger is used by consent mode logic within GTM.",
+      "gtmVariables": [
+        { "dlvPath": "OnetrustActiveGroups", "gtmVarName": "DLV - OnetrustActiveGroups" }
+      ],
+      "gtmTriggerName": "CE - OneTrustLoaded",
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 30,
+      "category": "CONSENT (SYSTEM)",
+      "dataLayerEvent": "OptanonLoaded",
+      "ga4EventName": null,
+      "whenItFires": "Optanon loaded (OneTrust alias)",
+      "status": "SYSTEM",
+      "notes": "Create DLV and trigger only. No GA4 Event tag.",
+      "gtmVariables": [
+        { "dlvPath": "OptanonActiveGroups", "gtmVarName": "DLV - OptanonActiveGroups" }
+      ],
+      "gtmTriggerName": "CE - OptanonLoaded",
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 31,
+      "category": "CONSENT (SYSTEM)",
+      "dataLayerEvent": "OneTrustGroupsUpdated",
+      "ga4EventName": null,
+      "whenItFires": "User updates consent preferences",
+      "status": "SYSTEM",
+      "notes": "Create DLV and trigger only. No GA4 Event tag.",
+      "gtmVariables": [
+        { "dlvPath": "OnetrustActiveGroups", "gtmVarName": "DLV - OnetrustActiveGroups" }
+      ],
+      "gtmTriggerName": "CE - OneTrustGroupsUpdated",
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 32,
+      "category": "GTM SYSTEM (NO ACTION)",
+      "dataLayerEvent": "gtm.js",
+      "ga4EventName": null,
+      "whenItFires": "GTM initialization",
+      "status": "SKIP",
+      "notes": "Uses GTM built-in Initialization trigger. Do not create programmatically.",
+      "gtmVariables": [],
+      "gtmTriggerName": null,
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 33,
+      "category": "GTM SYSTEM (NO ACTION)",
+      "dataLayerEvent": "gtm.dom",
+      "ga4EventName": null,
+      "whenItFires": "DOM ready",
+      "status": "SKIP",
+      "notes": "Uses GTM built-in DOM Ready trigger. Do not create programmatically.",
+      "gtmVariables": [],
+      "gtmTriggerName": null,
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 34,
+      "category": "GTM SYSTEM (NO ACTION)",
+      "dataLayerEvent": "gtm.load",
+      "ga4EventName": null,
+      "whenItFires": "Window loaded",
+      "status": "SKIP",
+      "notes": "Uses GTM built-in Window Loaded trigger. Do not create programmatically.",
+      "gtmVariables": [],
+      "gtmTriggerName": null,
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 35,
+      "category": "GTM SYSTEM (NO ACTION)",
+      "dataLayerEvent": "gtm.historyChange-v2",
+      "ga4EventName": null,
+      "whenItFires": "SPA-like navigation",
+      "status": "SKIP",
+      "notes": "Uses GTM built-in History Change trigger. Do not create programmatically.",
+      "gtmVariables": [],
+      "gtmTriggerName": null,
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 36,
+      "category": "GTM SYSTEM (NO ACTION)",
+      "dataLayerEvent": "gtm.scrollDepth",
+      "ga4EventName": null,
+      "whenItFires": "Scroll tracking",
+      "status": "SKIP",
+      "notes": "Uses GTM built-in Scroll Depth trigger. Do not create programmatically.",
+      "gtmVariables": [],
+      "gtmTriggerName": null,
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 37,
+      "category": "GTM SYSTEM (NO ACTION)",
+      "dataLayerEvent": "gtm.linkClick",
+      "ga4EventName": null,
+      "whenItFires": "Link click",
+      "status": "SKIP",
+      "notes": "Uses GTM built-in Click - Just Links trigger. Do not create programmatically.",
+      "gtmVariables": [],
+      "gtmTriggerName": null,
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 38,
+      "category": "NON-GA4 TAGS (THIRD PARTY)",
+      "dataLayerEvent": "eecPurchase",
+      "ga4EventName": null,
+      "whenItFires": "Purchase (UA format) → AB Tasty",
+      "status": "SKIP",
+      "notes": "Third-party tag. Client-specific. Out of scope for v1.",
+      "gtmVariables": [],
+      "gtmTriggerName": null,
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 39,
+      "category": "NON-GA4 TAGS (THIRD PARTY)",
+      "dataLayerEvent": "eecPurchase",
+      "ga4EventName": null,
+      "whenItFires": "Purchase (UA format) → Google Ads",
+      "status": "SKIP",
+      "notes": "Third-party tag. Client-specific. Out of scope for v1.",
+      "gtmVariables": [],
+      "gtmTriggerName": null,
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 40,
+      "category": "NON-GA4 TAGS (THIRD PARTY)",
+      "dataLayerEvent": "eecPurchase",
+      "ga4EventName": null,
+      "whenItFires": "Purchase (UA format) → Webloyalty",
+      "status": "SKIP",
+      "notes": "Third-party tag. Client-specific. Out of scope for v1.",
+      "gtmVariables": [],
+      "gtmTriggerName": null,
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 41,
+      "category": "NON-GA4 TAGS (THIRD PARTY)",
+      "dataLayerEvent": "(All Pages)",
+      "ga4EventName": null,
+      "whenItFires": "Every page → AB Tasty",
+      "status": "SKIP",
+      "notes": "Third-party tag. Client-specific. Out of scope for v1.",
+      "gtmVariables": [],
+      "gtmTriggerName": null,
+      "gtmTagName": null,
+      "ga4Parameters": []
+    },
+    {
+      "id": 42,
+      "category": "DATA LAYER PUSHES WITHOUT EVENT NAME",
+      "dataLayerEvent": "(no event name)",
+      "ga4EventName": null,
+      "whenItFires": "Consent Mode v2 default settings pushed before GTM loads",
+      "status": "SKIP",
+      "notes": "No event name — consumed automatically by Google Consent Mode v2. Not actionable by this tool.",
+      "gtmVariables": [],
+      "gtmTriggerName": null,
+      "gtmTagName": null,
+      "ga4Parameters": []
+    }
+  ]
+}
