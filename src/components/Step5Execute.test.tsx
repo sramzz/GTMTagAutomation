@@ -98,12 +98,6 @@ const createdTagEntity: GtmEntity = {
   path: 'accounts/1/containers/1/workspaces/1/tags/15',
 }
 
-const createdGa4ConfigEntity: GtmEntity = {
-  name: 'GA4 - Configuration TAG',
-  type: 'gaawc',
-  path: 'accounts/1/containers/1/workspaces/1/tags/20',
-}
-
 // GA4 Config Tag conflict results for various scenarios
 const ga4ConfigAlreadyCorrect: ConflictResult = {
   entityName: 'GA4 - Configuration TAG',

@@ -120,6 +120,7 @@ export async function executeAll(
   workspacePath: string,
   logger: Logger,
   onProgress: (results: ExecutionResult[]) => void,
+  // Kept for caller compatibility — Config Tag now flows through inputParser/conflict detection.
   _measurementId: string,
 ): Promise<ExecutionOutcome> {
   attachLogger(logger)
