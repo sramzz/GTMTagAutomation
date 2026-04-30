@@ -2,7 +2,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { detectConflicts } from './conflictDetection'
-import type { GtmVariablePayload, GtmEntity } from '../types'
+import type { GtmVariablePayload, GtmTagPayload, GtmEntity } from '../types'
 
 function makeVar(name: string, dlvPath: string): GtmVariablePayload {
   return {
@@ -95,5 +95,52 @@ describe('detectConflicts', () => {
     expect(results.find(r => r.entityName === 'DLV - ecommerce.items')!.status).toBe('ALREADY_CORRECT')
     expect(results.find(r => r.entityName === 'DLV - ecommerce.currency')!.status).toBe('CONFLICT')
     expect(results.find(r => r.entityName === 'DLV - ecommerce.value')!.status).toBe('WILL_CREATE')
+  })
+})
+
+describe('detectConflicts — GA4 Config Tag', () => {
+  const intendedConfigTag: GtmTagPayload = {
+    name: 'GA4 - Configuration TAG',
+    type: 'gaawc',
+    parameter: [
+      { key: 'measurementId', type: 'template', value: 'G-TEST12345' },
+      { key: 'sendPageView', type: 'boolean', value: 'true' },
+    ],
+    firingTriggerId: ['2147479553'],
+  }
+
+  it('classifies as WILL_CREATE when the workspace has no Config Tag', () => {
+    const results = detectConflicts([intendedConfigTag], [], 'tag')
+    expect(results[0].status).toBe('WILL_CREATE')
+  })
+
+  it('classifies as ALREADY_CORRECT when an identical Config Tag exists', () => {
+    const existing: GtmEntity = {
+      name: 'GA4 - Configuration TAG',
+      type: 'gaawc',
+      path: 'workspaces/1/tags/99',
+      parameter: [
+        { type: 'template', key: 'measurementId', value: 'G-TEST12345' },
+        { type: 'boolean', key: 'sendPageView', value: 'true' },
+      ],
+      firingTriggerId: ['2147479553'],
+    }
+    const results = detectConflicts([intendedConfigTag], [existing], 'tag')
+    expect(results[0].status).toBe('ALREADY_CORRECT')
+  })
+
+  it('classifies as CONFLICT when the Measurement IDs differ', () => {
+    const existing: GtmEntity = {
+      name: 'GA4 - Configuration TAG',
+      type: 'gaawc',
+      path: 'workspaces/1/tags/99',
+      parameter: [
+        { type: 'template', key: 'measurementId', value: 'G-OTHER0000' },
+        { type: 'boolean', key: 'sendPageView', value: 'true' },
+      ],
+      firingTriggerId: ['2147479553'],
+    }
+    const results = detectConflicts([intendedConfigTag], [existing], 'tag')
+    expect(results[0].status).toBe('CONFLICT')
   })
 })
