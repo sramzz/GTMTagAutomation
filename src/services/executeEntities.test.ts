@@ -46,4 +46,32 @@ describe('executeAll', () => {
 
     expect(gtmApi.createTag).not.toHaveBeenCalled()
   })
+
+  it('logs CREATED for a Config Tag passed in via the items list', async () => {
+    const items: ConflictResult[] = [{
+      entityName: 'GA4 - Configuration TAG',
+      entityType: 'tag',
+      status: 'WILL_CREATE',
+      decision: null,
+      intendedPayload: {
+        name: 'GA4 - Configuration TAG',
+        type: 'gaawc',
+        parameter: [
+          { key: 'measurementId', type: 'template', value: 'G-TEST12345' },
+          { key: 'sendPageView', type: 'boolean', value: 'true' },
+        ],
+        firingTriggerId: ['2147479553'],
+      },
+    }]
+    ;(gtmApi.createTag as ReturnType<typeof vi.fn>).mockResolvedValue({
+      name: 'GA4 - Configuration TAG', type: 'gaawc', path: 'workspaces/1/tags/1',
+    })
+
+    await executeAll(items, 'token', 'workspaces/1', fakeLogger, vi.fn(), 'G-TEST12345')
+
+    expect(fakeLogger.success).toHaveBeenCalledWith(
+      'GTM-API',
+      'CREATED tag "GA4 - Configuration TAG"',
+    )
+  })
 })
