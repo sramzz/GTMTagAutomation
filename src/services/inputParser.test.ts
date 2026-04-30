@@ -239,5 +239,21 @@ describe('getEntitiesFromAuditJson', () => {
     const configTag = result.tags.find(t => t.name === 'GA4 - Configuration TAG')
     expect(configTag).toBeDefined()
     expect(configTag?.type).toBe('gaawc')
+    const measurementParam = configTag?.parameter.find(
+      (p): p is { type: string; key: string; value: string } => 'value' in p && p.key === 'measurementId'
+    )
+    expect(measurementParam?.value).toBe('G-TEST12345')
+  })
+
+  it('includes exactly one Config Tag even with multiple audit events', () => {
+    const audit = {
+      view_item: { count: 1, variables: ['ecommerce.value'] },
+      add_to_cart: { count: 3, variables: ['ecommerce.currency'] },
+    }
+
+    const result = getEntitiesFromAuditJson(audit, [], 'G-TEST12345')
+
+    const configTags = result.tags.filter(t => t.name === 'GA4 - Configuration TAG')
+    expect(configTags).toHaveLength(1)
   })
 })
