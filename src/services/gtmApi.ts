@@ -1,5 +1,10 @@
 // gtmApi.ts — All GTM API v2 calls. Every function takes an access token and returns typed results.
 // Handles rate limiting (429) with exponential backoff and surfaces helpful error messages.
+//
+// Rate limiting strategy:
+// 1. Proactive sliding-window limiter at 25/min keeps us under Google's 30/min/user quota.
+// 2. Reactive 429 handler honors the Retry-After header for cases where someone else
+//    on the same Google Cloud project is using the quota too.
 
 import type {
   GtmAccount,
@@ -10,9 +15,23 @@ import type {
   GtmTriggerPayload,
   GtmTagPayload,
 } from '../types'
+import { RateLimiter } from './rateLimiter'
 
 const BASE_URL = 'https://www.googleapis.com/tagmanager/v2'
-const MAX_RETRIES = 3
+const MAX_RETRIES = 5
+const RATE_LIMIT_MAX = 25
+const RATE_LIMIT_WINDOW_MS = 60_000
+
+// Module-level limiter — shared across all API calls. Why module-level: there is one
+// browser tab making sequential requests, and the quota is per-user, so a singleton matches reality.
+const rateLimiter = new RateLimiter({
+  maxRequests: RATE_LIMIT_MAX,
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  onWait: (waitMs, used, limit) => {
+    // Temporarily log via console.warn — wired to the proper logger in Task 4.
+    console.warn(`[GTM-API] Rate limit reached (${used}/${limit} used in last 60s). Waiting ${(waitMs / 1000).toFixed(1)}s before next request...`)
+  },
+})
 
 // --- Internal fetch wrapper with retry logic ---
 
@@ -26,6 +45,9 @@ async function gtmFetch(token: string, url: string, options: RequestInit = {}): 
   let lastError: Error | null = null
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    // Proactive throttle: wait if we'd exceed our quota window
+    await rateLimiter.acquire()
+
     const response = await fetch(url, { ...options, headers })
 
     if (response.ok) {
@@ -37,9 +59,12 @@ async function gtmFetch(token: string, url: string, options: RequestInit = {}): 
     }
 
     if (response.status === 429 && attempt < MAX_RETRIES) {
-      const delay = Math.pow(2, attempt) * 1000
+      // Reactive backoff: prefer the server's Retry-After hint, fall back to exponential.
+      const retryAfter = parseRetryAfter(response.headers.get('Retry-After'))
+      const delay = retryAfter ?? Math.min(Math.pow(2, attempt) * 1000, 60_000)
+      console.warn(`[GTM-API] 429 received (attempt ${attempt + 1}/${MAX_RETRIES + 1}). Waiting ${(delay / 1000).toFixed(1)}s before retry...`)
       await new Promise(resolve => setTimeout(resolve, delay))
-      lastError = new Error(`Rate limited (attempt ${attempt + 1} of ${MAX_RETRIES})`)
+      lastError = new Error(`Rate limited (attempt ${attempt + 1} of ${MAX_RETRIES + 1})`)
       continue
     }
 
@@ -48,6 +73,27 @@ async function gtmFetch(token: string, url: string, options: RequestInit = {}): 
   }
 
   throw lastError || new Error('GTM API request failed after retries')
+}
+
+// Parses the Retry-After header. Per RFC 7231 it can be either:
+// - a number of seconds (e.g. "30")
+// - an HTTP-date (e.g. "Wed, 21 Oct 2026 07:28:00 GMT")
+// Returns milliseconds to wait, or null if the header is missing or unparseable.
+function parseRetryAfter(headerValue: string | null): number | null {
+  if (!headerValue) return null
+
+  const seconds = Number(headerValue)
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return seconds * 1000
+  }
+
+  const dateMs = Date.parse(headerValue)
+  if (!Number.isNaN(dateMs)) {
+    const delta = dateMs - Date.now()
+    return delta > 0 ? delta : 0
+  }
+
+  return null
 }
 
 // --- Public API functions ---

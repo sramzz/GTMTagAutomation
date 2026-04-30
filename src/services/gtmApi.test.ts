@@ -80,7 +80,7 @@ describe('createWorkspace', () => {
 
 describe('retry on 429', () => {
   it('retries with backoff on rate limit and succeeds', async () => {
-    const rateLimitResponse = { ok: false, status: 429, json: () => Promise.resolve({}), text: () => Promise.resolve('rate limited') } as Response
+    const rateLimitResponse = { ok: false, status: 429, json: () => Promise.resolve({}), text: () => Promise.resolve('rate limited'), headers: { get: () => null } } as unknown as Response
     const successResponse = { ok: true, status: 200, json: () => Promise.resolve({ account: [] }), text: () => Promise.resolve('{}') } as Response
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce(rateLimitResponse)
