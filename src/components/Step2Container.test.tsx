@@ -249,7 +249,7 @@ describe('Step2Container', () => {
     expect(screen.getByRole('button', { name: /next/i })).toBeEnabled()
   })
 
-  it('shows a workspace dropdown after container is selected, listing existing workspaces plus a "create new" option', async () => {
+  it('shows a workspace dropdown after container is selected, listing existing workspaces plus a "Create new workspace" option', async () => {
     const user = userEvent.setup()
     render(<Step2Container accessToken={TOKEN} onContainerSelected={mockOnContainerSelected} />)
 
@@ -262,22 +262,45 @@ describe('Step2Container', () => {
 
     const workspaceSelect = screen.getByLabelText(/workspace/i)
     expect(workspaceSelect).toHaveTextContent('Default Workspace')
-    expect(workspaceSelect).toHaveTextContent(/Create new/i)
+    expect(workspaceSelect).toHaveTextContent('Create new workspace')
+  })
+
+  it('shows a workspace-name input with a unique default when create-new is selected', async () => {
+    const user = userEvent.setup()
+    render(<Step2Container accessToken={TOKEN} onContainerSelected={mockOnContainerSelected} />)
+
+    await waitFor(() => expect(screen.getByText('Acme Corp')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/account/i), 'accounts/111')
+    await waitFor(() => expect(screen.getByText('Web Prod (GTM-ABC123)')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/container/i), 'accounts/111/containers/c1')
+    await waitFor(() => expect(screen.getByLabelText(/workspace/i)).toBeInTheDocument())
+
+    await user.selectOptions(screen.getByLabelText(/workspace/i), '__create_new__')
+
+    const today = new Date().toISOString().slice(0, 10)
+    expect(screen.getByLabelText(/workspace name/i)).toHaveValue(`S4D Automation - ${today}`)
+    expect(mockLogger.info).toHaveBeenCalledWith('GTM-API', 'Create-new workspace selected')
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      'GTM-API',
+      `Workspace name defaulted to "S4D Automation - ${today}"`
+    )
   })
 
   // --- Creates dated workspace on "Next" click ---
 
-  it('creates workspace and calls onContainerSelected on Next click', async () => {
+  it('creates workspace with the trimmed custom name and calls onContainerSelected on Next click', async () => {
     const user = userEvent.setup()
     await renderAndFillForm(user)
 
+    await user.clear(screen.getByLabelText(/workspace name/i))
+    await user.type(screen.getByLabelText(/workspace name/i), '  Fresh Workspace  ')
     await user.click(screen.getByRole('button', { name: /next/i }))
 
     await waitFor(() => {
       expect(mockCreateWorkspace).toHaveBeenCalledWith(
         TOKEN,
         'accounts/111/containers/c1',
-        expect.stringMatching(/^S4D Automation - \d{4}-\d{2}-\d{2}$/)
+        'Fresh Workspace'
       )
     })
 
@@ -317,7 +340,7 @@ describe('Step2Container', () => {
     expect(mockCreateWorkspace).not.toHaveBeenCalled()
   })
 
-  it('hides the "Create new" option when today\'s dated workspace already exists', async () => {
+  it('keeps create-new available when today\'s workspace exists and defaults to a suffixed unique name', async () => {
     const today = new Date().toISOString().slice(0, 10)
     const todaysWorkspace: GtmWorkspace = {
       workspaceId: 'wToday',
@@ -335,11 +358,15 @@ describe('Step2Container', () => {
 
     await waitFor(() => expect(screen.getByLabelText(/workspace/i)).toBeInTheDocument())
     const workspaceSelect = screen.getByLabelText(/workspace/i)
-    expect(workspaceSelect).not.toHaveTextContent(/Create new/i)
+    expect(workspaceSelect).toHaveTextContent('Create new workspace')
     expect(workspaceSelect).toHaveTextContent(`S4D Automation - ${today}`)
+
+    await user.selectOptions(workspaceSelect, '__create_new__')
+
+    expect(screen.getByLabelText(/workspace name/i)).toHaveValue(`S4D Automation - ${today} (2)`)
   })
 
-  it('hides the "Create new" option when the container is at the workspace limit', async () => {
+  it('blocks create-new when the container is at the workspace limit', async () => {
     const threeWorkspaces: GtmWorkspace[] = [
       { workspaceId: 'w1', name: 'WS 1', path: 'p/w1' },
       { workspaceId: 'w2', name: 'WS 2', path: 'p/w2' },
@@ -356,8 +383,52 @@ describe('Step2Container', () => {
 
     await waitFor(() => expect(screen.getByLabelText(/workspace/i)).toBeInTheDocument())
     const workspaceSelect = screen.getByLabelText(/workspace/i)
-    expect(workspaceSelect).not.toHaveTextContent(/Create new/i)
+    expect(workspaceSelect).not.toHaveTextContent('Create new workspace')
     expect(workspaceSelect).toHaveTextContent('WS 1')
+  })
+
+  it('disables Next and logs validation when the new workspace name duplicates an existing workspace', async () => {
+    const user = userEvent.setup()
+    render(<Step2Container accessToken={TOKEN} onContainerSelected={mockOnContainerSelected} />)
+
+    await waitFor(() => expect(screen.getByText('Acme Corp')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/account/i), 'accounts/111')
+    await waitFor(() => expect(screen.getByText('Web Prod (GTM-ABC123)')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/container/i), 'accounts/111/containers/c1')
+    await waitFor(() => expect(screen.getByLabelText(/workspace/i)).toBeInTheDocument())
+
+    await user.selectOptions(screen.getByLabelText(/workspace/i), '__create_new__')
+    await user.clear(screen.getByLabelText(/workspace name/i))
+    await user.type(screen.getByLabelText(/workspace name/i), 'Default Workspace')
+    await user.click(screen.getByLabelText(/measurement id/i))
+    await user.type(screen.getByLabelText(/measurement id/i), 'G-ABC1234567')
+
+    expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
+    await waitFor(() => {
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'VALIDATION',
+        'Workspace name validation failed: Workspace name "Default Workspace" already exists'
+      )
+    })
+  })
+
+  it('disables Next when the new workspace name is blank', async () => {
+    const user = userEvent.setup()
+    render(<Step2Container accessToken={TOKEN} onContainerSelected={mockOnContainerSelected} />)
+
+    await waitFor(() => expect(screen.getByText('Acme Corp')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/account/i), 'accounts/111')
+    await waitFor(() => expect(screen.getByText('Web Prod (GTM-ABC123)')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/container/i), 'accounts/111/containers/c1')
+    await waitFor(() => expect(screen.getByLabelText(/workspace/i)).toBeInTheDocument())
+
+    await user.selectOptions(screen.getByLabelText(/workspace/i), '__create_new__')
+    await user.clear(screen.getByLabelText(/workspace name/i))
+    await user.type(screen.getByLabelText(/workspace name/i), '   ')
+    await user.type(screen.getByLabelText(/measurement id/i), 'G-ABC1234567')
+
+    expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
+    expect(screen.getByText(/workspace name is required/i)).toBeInTheDocument()
   })
 
   // --- Logs all API calls and results ---

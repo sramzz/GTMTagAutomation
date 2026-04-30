@@ -72,7 +72,10 @@ describe('createWorkspace', () => {
     const result = await createWorkspace(mockToken, 'accounts/1/containers/2', 'S4D Automation - 2026-04-20')
     expect(fetchSpy).toHaveBeenCalledWith(
       'https://www.googleapis.com/tagmanager/v2/accounts/1/containers/2/workspaces',
-      expect.objectContaining({ method: 'POST' }),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ name: 'S4D Automation - 2026-04-20' }),
+      }),
     )
     expect(result.name).toBe('S4D Automation - 2026-04-20')
   })

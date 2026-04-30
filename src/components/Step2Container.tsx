@@ -22,6 +22,29 @@ const MAX_WORKSPACES = 3
 // All other option values are real workspace paths.
 const CREATE_NEW_WORKSPACE = '__create_new__'
 
+function buildDefaultWorkspaceName(workspaces: GtmWorkspace[]): string {
+  const today = new Date().toISOString().slice(0, 10)
+  const baseName = `S4D Automation - ${today}`
+  const existingNames = new Set(workspaces.map(w => w.name))
+
+  if (!existingNames.has(baseName)) return baseName
+
+  let suffix = 2
+  let candidate = `${baseName} (${suffix})`
+  while (existingNames.has(candidate)) {
+    suffix += 1
+    candidate = `${baseName} (${suffix})`
+  }
+  return candidate
+}
+
+function workspaceNameValidationError(name: string, workspaces: GtmWorkspace[]): string {
+  const trimmedName = name.trim()
+  if (!trimmedName) return 'Workspace name is required'
+  if (workspaces.some(w => w.name === trimmedName)) return `Workspace name "${trimmedName}" already exists`
+  return ''
+}
+
 export function Step2Container({ accessToken, onContainerSelected }: Step2ContainerProps) {
   const { logger } = useLog()
 
@@ -35,6 +58,8 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
   const [workspaceWarning, setWorkspaceWarning] = useState('')
   const [workspaces, setWorkspaces] = useState<GtmWorkspace[]>([])
   const [selectedWorkspaceValue, setSelectedWorkspaceValue] = useState('')
+  const [newWorkspaceName, setNewWorkspaceName] = useState('')
+  const [newWorkspaceNameError, setNewWorkspaceNameError] = useState('')
   // Prevents the Next button from enabling before the workspace count API call completes
   const [workspaceCheckDone, setWorkspaceCheckDone] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -66,6 +91,8 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
     setContainers([])
     setWorkspaces([])
     setSelectedWorkspaceValue('')
+    setNewWorkspaceName('')
+    setNewWorkspaceNameError('')
     setWorkspaceWarning('')
     setWorkspaceCheckDone(false)
     setError('')
@@ -88,13 +115,15 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
     setSelectedContainerPath(containerPath)
     setWorkspaces([])
     setSelectedWorkspaceValue('')
+    setNewWorkspaceName('')
+    setNewWorkspaceNameError('')
     setWorkspaceWarning('')
     setWorkspaceCheckDone(false)
     setError('')
 
     if (!containerPath) return
 
-    logger.info('GTM-API', `Checking workspaces for ${containerPath}...`)
+    logger.info('GTM-API', `Fetching workspaces for ${containerPath}...`)
     try {
       const result = await listWorkspaces(accessToken, containerPath)
       logger.success('GTM-API', `Found ${result.length} existing workspaces`)
@@ -113,6 +142,21 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
     }
   }
 
+  function handleWorkspaceChange(value: string) {
+    setSelectedWorkspaceValue(value)
+    setNewWorkspaceNameError('')
+
+    if (value === CREATE_NEW_WORKSPACE) {
+      const defaultName = buildDefaultWorkspaceName(workspaces)
+      setNewWorkspaceName(defaultName)
+      logger.info('GTM-API', 'Create-new workspace selected')
+      logger.info('GTM-API', `Workspace name defaulted to "${defaultName}"`)
+      return
+    }
+
+    setNewWorkspaceName('')
+  }
+
   function validateMeasurementId(value: string) {
     if (value && !MEASUREMENT_ID_REGEX.test(value)) {
       const msg = 'Measurement ID must match format G-XXXXXXXXXX'
@@ -123,11 +167,12 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
     }
   }
 
-  const today = new Date().toISOString().slice(0, 10)
-  const todayWorkspaceName = `S4D Automation - ${today}`
-  const todayWorkspaceExists = workspaces.some(w => w.name === todayWorkspaceName)
   const atWorkspaceLimit = workspaces.length >= MAX_WORKSPACES
-  const canCreateNew = !todayWorkspaceExists && !atWorkspaceLimit
+  const canCreateNew = !atWorkspaceLimit
+  const isCreatingNewWorkspace = selectedWorkspaceValue === CREATE_NEW_WORKSPACE
+  const currentWorkspaceNameError = isCreatingNewWorkspace
+    ? workspaceNameValidationError(newWorkspaceName, workspaces)
+    : ''
 
   const selectedContainer = containers.find(c => c.path === selectedContainerPath)
   const isValid = Boolean(
@@ -135,8 +180,17 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
     selectedContainerPath &&
     MEASUREMENT_ID_REGEX.test(measurementId) &&
     workspaceCheckDone &&
-    selectedWorkspaceValue
+    selectedWorkspaceValue &&
+    (!isCreatingNewWorkspace || (!atWorkspaceLimit && !currentWorkspaceNameError))
   )
+
+  function validateNewWorkspaceName(value: string) {
+    const msg = workspaceNameValidationError(value, workspaces)
+    setNewWorkspaceNameError(msg)
+    if (msg) {
+      logger.warn('VALIDATION', `Workspace name validation failed: ${msg}`)
+    }
+  }
 
   async function handleNext() {
     if (!selectedContainer || !isValid) return
@@ -148,16 +202,24 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
       let workspace: GtmWorkspace
 
       if (selectedWorkspaceValue === CREATE_NEW_WORKSPACE) {
-        logger.info('GTM-API', `Creating workspace "${todayWorkspaceName}"...`)
-        workspace = await createWorkspace(accessToken, selectedContainerPath, todayWorkspaceName)
-        logger.success('GTM-API', `Created workspace "${workspace.name}"`)
+        const trimmedWorkspaceName = newWorkspaceName.trim()
+        const validationError = workspaceNameValidationError(trimmedWorkspaceName, workspaces)
+        if (validationError) {
+          logger.warn('VALIDATION', `Workspace name validation failed: ${validationError}`)
+          setNewWorkspaceNameError(validationError)
+          return
+        }
+
+        logger.info('GTM-API', `Creating workspace "${trimmedWorkspaceName}" in ${selectedContainerPath}...`)
+        workspace = await createWorkspace(accessToken, selectedContainerPath, trimmedWorkspaceName)
+        logger.success('GTM-API', `Created workspace "${workspace.name}" (${workspace.path})`)
       } else {
         const existing = workspaces.find(w => w.path === selectedWorkspaceValue)
         if (!existing) {
           throw new Error('Selected workspace not found')
         }
         workspace = existing
-        logger.info('GTM-API', `Reusing existing workspace "${workspace.name}"`)
+        logger.info('GTM-API', `Reusing existing workspace "${workspace.name}" (${workspace.path})`)
       }
 
       logger.success('WIZARD', 'Step 2 complete — container and workspace selected')
@@ -227,12 +289,12 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
           <select
             id="workspace-select"
             value={selectedWorkspaceValue}
-            onChange={e => setSelectedWorkspaceValue(e.target.value)}
+            onChange={e => handleWorkspaceChange(e.target.value)}
           >
             <option value="">-- Select a workspace --</option>
             {canCreateNew && (
               <option value={CREATE_NEW_WORKSPACE}>
-                Create new: {todayWorkspaceName}
+                Create new workspace
               </option>
             )}
             {workspaces.map(w => (
@@ -241,6 +303,27 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
               </option>
             ))}
           </select>
+        </div>
+      )}
+
+      {isCreatingNewWorkspace && (
+        <div className="step2-field">
+          <label htmlFor="workspace-name">Workspace name</label>
+          <input
+            id="workspace-name"
+            type="text"
+            value={newWorkspaceName}
+            onChange={e => {
+              setNewWorkspaceName(e.target.value)
+              if (newWorkspaceNameError) setNewWorkspaceNameError('')
+            }}
+            onBlur={e => validateNewWorkspaceName(e.target.value)}
+          />
+          {(newWorkspaceNameError || currentWorkspaceNameError) && (
+            <div className="step2-inline-error">
+              {newWorkspaceNameError || currentWorkspaceNameError}
+            </div>
+          )}
         </div>
       )}
 

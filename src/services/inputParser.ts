@@ -55,6 +55,12 @@ export interface EntityLists {
   tags: GtmTagPayload[]
 }
 
+const PENDING_TRIGGER_ID = '__PENDING_TRIGGER_ID__'
+
+function pendingTriggerId(triggerName: string): string {
+  return `${PENDING_TRIGGER_ID}:${triggerName}`
+}
+
 export function getEntitiesFromMasterMapping(
   entries: MasterMappingEntry[],
   measurementId: string,
@@ -84,7 +90,7 @@ export function getEntitiesFromMasterMapping(
         entry.ga4EventName,
         measurementId,
         entry.ga4Parameters,
-        '__PENDING_TRIGGER_ID__',
+        entry.gtmTriggerName ? pendingTriggerId(entry.gtmTriggerName) : PENDING_TRIGGER_ID,
       ))
     }
   }
@@ -141,7 +147,7 @@ export function getEntitiesFromAuditJson(
           masterEntry.ga4EventName,
           measurementId,
           masterEntry.ga4Parameters,
-          '__PENDING_TRIGGER_ID__',
+          masterEntry.gtmTriggerName ? pendingTriggerId(masterEntry.gtmTriggerName) : PENDING_TRIGGER_ID,
         ))
       }
     } else if (!masterEntry) {
@@ -155,7 +161,8 @@ export function getEntitiesFromAuditJson(
         }
       }
 
-      triggers.push(buildTriggerPayload(`CE - ${eventName}`, eventName))
+      const triggerName = `CE - ${eventName}`
+      triggers.push(buildTriggerPayload(triggerName, eventName))
 
       const autoParams = variablePaths.map(path => ({
         paramName: deriveGa4ParamName(path),
@@ -167,7 +174,7 @@ export function getEntitiesFromAuditJson(
         eventName,
         measurementId,
         autoParams,
-        '__PENDING_TRIGGER_ID__',
+        pendingTriggerId(triggerName),
       ))
     }
   }

@@ -15,6 +15,9 @@ import type {
 // Lookup map: trigger name -> trigger ID (resolved at runtime)
 type TriggerIdMap = Map<string, string>
 
+const PENDING_TRIGGER_ID = '__PENDING_TRIGGER_ID__'
+const PENDING_TRIGGER_ID_PREFIX = `${PENDING_TRIGGER_ID}:`
+
 /** Extract trigger ID from a GtmEntity path like ".../triggers/42" or from its triggerId field. */
 function extractTriggerId(entity: GtmEntity): string | undefined {
   if (entity.triggerId) return entity.triggerId
@@ -28,25 +31,44 @@ function triggerNameForTag(tagName: string): string {
   return `CE - ${eventName}`
 }
 
-/** Replace __PENDING_TRIGGER_ID__ in a tag payload with the real trigger ID. */
+function pendingTriggerName(id: string, tagName: string): string | null {
+  if (id.startsWith(PENDING_TRIGGER_ID_PREFIX)) {
+    const triggerName = id.slice(PENDING_TRIGGER_ID_PREFIX.length)
+    if (!triggerName) {
+      throw new Error(`Invalid pending trigger marker for tag "${tagName}"`)
+    }
+    return triggerName
+  }
+  if (id === PENDING_TRIGGER_ID) {
+    return triggerNameForTag(tagName)
+  }
+  if (id.includes(PENDING_TRIGGER_ID)) {
+    throw new Error(`Invalid pending trigger marker "${id}" for tag "${tagName}"`)
+  }
+  return null
+}
+
+/** Replace pending trigger markers in a tag payload with real GTM trigger IDs. */
 function resolveTagPayload(
   payload: GtmTagPayload,
   tagName: string,
   triggerMap: TriggerIdMap,
 ): GtmTagPayload {
-  const hasPending = payload.firingTriggerId.includes('__PENDING_TRIGGER_ID__')
-  if (!hasPending) return payload
+  let changed = false
+  const firingTriggerId = payload.firingTriggerId.map(id => {
+    const triggerName = pendingTriggerName(id, tagName)
+    if (!triggerName) return id
 
-  const triggerName = triggerNameForTag(tagName)
-  const realId = triggerMap.get(triggerName)
-  if (!realId) return payload // caller should handle missing ID
+    const realId = triggerMap.get(triggerName)
+    if (!realId) {
+      throw new Error(`Could not resolve firing trigger "${triggerName}" for tag "${tagName}"`)
+    }
 
-  return {
-    ...payload,
-    firingTriggerId: payload.firingTriggerId.map(
-      id => id === '__PENDING_TRIGGER_ID__' ? realId : id
-    ),
-  }
+    changed = true
+    return realId
+  })
+
+  return changed ? { ...payload, firingTriggerId } : payload
 }
 
 /** Execute one entity (create, update, or skip) and return the result. */

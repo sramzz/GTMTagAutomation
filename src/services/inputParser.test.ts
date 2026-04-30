@@ -3,6 +3,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseAuditJson, getEntitiesFromMasterMapping, getEntitiesFromAuditJson } from './inputParser'
 import type { AuditJson, MasterMappingEntry } from '../types'
+import masterMapping from '../data/masterMapping.json'
 
 describe('parseAuditJson', () => {
   it('parses valid audit JSON string', () => {
@@ -41,6 +42,8 @@ describe('parseAuditJson', () => {
 })
 
 describe('getEntitiesFromMasterMapping', () => {
+  const defaultEntries = (masterMapping as { events: MasterMappingEntry[] }).events
+
   const liveMappingEntry: MasterMappingEntry = {
     id: 1,
     category: 'TEST',
@@ -161,6 +164,17 @@ describe('getEntitiesFromMasterMapping', () => {
     const configTags = result.tags.filter(t => t.name === 'GA4 - Configuration TAG')
     expect(configTags).toHaveLength(1)
   })
+
+  it('uses exact trigger names from default S4D mapping when tag names diverge', () => {
+    const result = getEntitiesFromMasterMapping(defaultEntries, 'G-TEST12345')
+
+    expect(result.tags.find(t => t.name === 'GA4 Event - purchase')?.firingTriggerId)
+      .toEqual(['__PENDING_TRIGGER_ID__:EEC purchase'])
+    expect(result.tags.find(t => t.name === 'GA4 Event - begin_checkout')?.firingTriggerId)
+      .toEqual(['__PENDING_TRIGGER_ID__:CE - eecCheckout'])
+    expect(result.tags.find(t => t.name === 'GA4 Event - coupon_applied (NEW)')?.firingTriggerId)
+      .toEqual(['__PENDING_TRIGGER_ID__:CE - couponcode (NEW)'])
+  })
 })
 
 describe('getEntitiesFromAuditJson', () => {
@@ -185,6 +199,8 @@ describe('getEntitiesFromAuditJson', () => {
     },
   ]
 
+  const defaultEntries = (masterMapping as { events: MasterMappingEntry[] }).events
+
   it('uses master mapping config when event name matches', () => {
     const audit: AuditJson = {
       'add_to_cart': { count: 5, variables: ['event', 'ecommerce.currency', 'ecommerce.items'] },
@@ -203,6 +219,18 @@ describe('getEntitiesFromAuditJson', () => {
     expect(result.tags[0].name).toBe('GA4 Event - custom_event')
     expect(result.variables.map(v => v.name)).toContain('DLV - ecommerce.promo_id')
     expect(result.variables.map(v => v.name)).toContain('DLV - some_field')
+    expect(result.tags[0].firingTriggerId).toEqual(['__PENDING_TRIGGER_ID__:CE - custom_event'])
+  })
+
+  it('uses exact trigger names from default mapping for matching audit events', () => {
+    const audit: AuditJson = {
+      eecCheckout: { count: 1, variables: ['event', 'ecommerce.checkout.products'] },
+    }
+
+    const result = getEntitiesFromAuditJson(audit, defaultEntries, 'G-TEST12345')
+
+    expect(result.tags.find(t => t.name === 'GA4 Event - begin_checkout')?.firingTriggerId)
+      .toEqual(['__PENDING_TRIGGER_ID__:CE - eecCheckout'])
   })
 
   it('filters out the "event" variable from audit data', () => {
