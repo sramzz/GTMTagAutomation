@@ -620,4 +620,22 @@ describe('Step5Execute', () => {
     expect(() => attachLogger(mockLogger as unknown as never)).not.toThrow()
     expect(() => attachLogger(null)).not.toThrow()
   })
+
+  it('shows an estimated time when execution starts', async () => {
+    // 30 WILL_CREATE entities — at 25/min limit, ETA is 2 minutes
+    const manyEntities: ConflictResult[] = Array.from({ length: 30 }, (_, i) => ({
+      entityName: `Variable ${i}`,
+      entityType: 'variable' as const,
+      status: 'WILL_CREATE' as const,
+      decision: null,
+      intendedPayload: { name: `Variable ${i}`, type: 'v', parameter: [] },
+    }))
+
+    renderStep5(manyEntities)
+
+    await waitFor(() => {
+      // Match "Estimated time" text — exact format flexible
+      expect(screen.getByText(/estimated time/i)).toBeInTheDocument()
+    })
+  })
 })

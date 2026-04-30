@@ -36,6 +36,15 @@ export function Step5Execute({
   const [activePhase, setActivePhase] = useState<Phase>('variable')
   const executedRef = useRef(false)
 
+  // ETA calculation: count requests that will actually hit the API (not skipped/already-correct).
+  // At 25 requests/min, runtime ≈ ceil(requestCount / 25) minutes (worst case under throttle).
+  const requestCount = conflictResults.filter(r => {
+    if (r.status === 'ALREADY_CORRECT') return false
+    if (r.status === 'CONFLICT' && r.decision === 'SKIP') return false
+    return true
+  }).length
+  const etaMinutes = Math.max(1, Math.ceil(requestCount / 25))
+
   useEffect(() => {
     // Guard against React strict-mode double-mount
     if (executedRef.current) return
@@ -68,6 +77,10 @@ export function Step5Execute({
   return (
     <div className="step5-container">
       <h2>Step 5 of 5</h2>
+
+      <p className="step5-eta">
+        Estimated time: ~{etaMinutes} minute{etaMinutes !== 1 ? 's' : ''} ({requestCount} API request{requestCount !== 1 ? 's' : ''})
+      </p>
 
       <ProgressBar activePhase={activePhase} done={done} stopped={outcome?.stopped ?? false} />
 
