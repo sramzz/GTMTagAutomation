@@ -531,45 +531,6 @@ describe('Step5Execute', () => {
 
   // --- GA4 Configuration Tag integration ---
 
-  it('auto-creates GA4 Config Tag when not present in conflict results', async () => {
-    // Only event-level entities, no GA4 Config Tag in the list
-    mockCreateTag.mockResolvedValueOnce(createdGa4ConfigEntity)
-      .mockResolvedValueOnce(createdTagEntity)
-
-    renderStep5([variableConflictResult, triggerConflictResult, tagConflictResult])
-
-    await waitFor(() => {
-      // GA4 Config Tag should appear in results
-      expect(screen.getByText('GA4 - Configuration TAG')).toBeInTheDocument()
-    })
-
-    // The first createTag call should be the config tag (auto-created before event tags)
-    const firstTagCall = mockCreateTag.mock.calls[0]
-    const firstTagPayload = firstTagCall[2]
-    expect(firstTagPayload.name).toBe('GA4 - Configuration TAG')
-    expect(firstTagPayload.type).toBe('gaawc')
-    expect(firstTagPayload.parameter).toEqual(
-      expect.arrayContaining([
-        { key: 'measurementId', type: 'template', value: MEASUREMENT_ID },
-      ])
-    )
-  })
-
-  it('creates GA4 Config Tag before event tags', async () => {
-    mockCreateTag.mockResolvedValueOnce(createdGa4ConfigEntity)
-      .mockResolvedValueOnce(createdTagEntity)
-
-    renderStep5([variableConflictResult, triggerConflictResult, tagConflictResult])
-
-    await waitFor(() => {
-      expect(mockCreateTag).toHaveBeenCalledTimes(2)
-    })
-
-    // First createTag call = GA4 Config, second = event tag
-    expect((mockCreateTag.mock.calls[0] as [string, string, { name: string }])[2].name).toBe('GA4 - Configuration TAG')
-    expect((mockCreateTag.mock.calls[1] as [string, string, { name: string }])[2].name).toBe('GA4 Event - view_item_list')
-  })
-
   it('skips GA4 Config Tag when it already exists as ALREADY_CORRECT', async () => {
     renderStep5([variableConflictResult, triggerConflictResult, ga4ConfigAlreadyCorrect, tagConflictResult])
 
@@ -598,17 +559,6 @@ describe('Step5Execute', () => {
     // The updateTag call should be for the GA4 Config Tag
     const updateCallArgs = mockUpdateTag.mock.calls[0] as [string, string, unknown]
     expect(updateCallArgs[1]).toBe(ga4ConfigConflictOverwrite.existingEntity!.path)
-  })
-
-  it('logs GA4 Config Tag auto-creation', async () => {
-    mockCreateTag.mockResolvedValueOnce(createdGa4ConfigEntity)
-      .mockResolvedValueOnce(createdTagEntity)
-
-    renderStep5([variableConflictResult, triggerConflictResult, tagConflictResult])
-
-    await waitFor(() => {
-      expect(mockLogger.info).toHaveBeenCalledWith('GTM-API', expect.stringContaining('GA4 - Configuration TAG'))
-    })
   })
 
   it('rate-limit warnings are logged via the logger', async () => {
