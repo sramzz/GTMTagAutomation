@@ -4,6 +4,7 @@
 import {
   createVariable, createTrigger, createTag,
   updateVariable, updateTrigger, updateTag,
+  attachLogger,
 } from './gtmApi'
 import { buildGa4ConfigTagPayload } from './entityBuilder'
 import type { Logger } from '../logging/logger'
@@ -128,78 +129,83 @@ export async function executeAll(
   onProgress: (results: ExecutionResult[]) => void,
   measurementId: string,
 ): Promise<ExecutionOutcome> {
-  // Sort: variables first, triggers second, tags third
-  const sorted = [...items].sort((a, b) => {
-    const order: Record<EntityType, number> = { variable: 0, trigger: 1, tag: 2 }
-    return order[a.entityType] - order[b.entityType]
-  })
+  attachLogger(logger)
+  try {
+    // Sort: variables first, triggers second, tags third
+    const sorted = [...items].sort((a, b) => {
+      const order: Record<EntityType, number> = { variable: 0, trigger: 1, tag: 2 }
+      return order[a.entityType] - order[b.entityType]
+    })
 
-  const triggerMap: TriggerIdMap = new Map()
-  const results: ExecutionResult[] = []
-  let successCount = 0
+    const triggerMap: TriggerIdMap = new Map()
+    const results: ExecutionResult[] = []
+    let successCount = 0
 
-  // Pre-populate trigger map with existing/skipped triggers so tags can resolve them
-  for (const item of sorted) {
-    if (item.entityType === 'trigger' && item.existingEntity) {
-      const id = extractTriggerId(item.existingEntity)
-      if (id) triggerMap.set(item.entityName, id)
-    }
-  }
-
-  // Check if GA4 Config Tag is already in the conflict results
-  const hasConfigTag = sorted.some(item => item.entityName === GA4_CONFIG_TAG_NAME)
-
-  logger.info('GTM-API', `Starting execution — ${sorted.length} entities to process`)
-
-  // Auto-create GA4 Config Tag before event tags if not already in the items
-  if (!hasConfigTag) {
-    try {
-      const configPayload = buildGa4ConfigTagPayload(measurementId)
-      logger.info('GTM-API', `Creating tag "${GA4_CONFIG_TAG_NAME}" (auto)...`)
-      await createTag(token, workspacePath, configPayload as never)
-      logger.success('GTM-API', `CREATED tag "${GA4_CONFIG_TAG_NAME}" (auto)`)
-      results.push({ entityName: GA4_CONFIG_TAG_NAME, entityType: 'tag', action: 'CREATED' })
-      onProgress([...results])
-      successCount++
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error'
-      logger.error('GTM-API', `ERROR tag "${GA4_CONFIG_TAG_NAME}": ${msg}`)
-      results.push({ entityName: GA4_CONFIG_TAG_NAME, entityType: 'tag', action: 'ERROR', errorMessage: msg })
-      onProgress([...results])
-      return { results, stopped: true, stoppedAt: GA4_CONFIG_TAG_NAME, successCount }
-    }
-  }
-
-  for (const item of sorted) {
-    try {
-      const { result, apiEntity } = await executeOne(item, token, workspacePath, triggerMap, logger)
-      results.push(result)
-      onProgress([...results])
-
-      // Track trigger IDs from newly created/updated triggers
-      if (item.entityType === 'trigger' && apiEntity) {
-        const id = extractTriggerId(apiEntity)
+    // Pre-populate trigger map with existing/skipped triggers so tags can resolve them
+    for (const item of sorted) {
+      if (item.entityType === 'trigger' && item.existingEntity) {
+        const id = extractTriggerId(item.existingEntity)
         if (id) triggerMap.set(item.entityName, id)
       }
-
-      if (result.action !== 'ERROR') {
-        successCount++
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error'
-      logger.error('GTM-API', `ERROR ${item.entityType} "${item.entityName}": ${msg}`)
-      results.push({
-        entityName: item.entityName,
-        entityType: item.entityType,
-        action: 'ERROR',
-        errorMessage: msg,
-      })
-      onProgress([...results])
-
-      return { results, stopped: true, stoppedAt: item.entityName, successCount }
     }
-  }
 
-  logger.success('GTM-API', `Execution complete — ${successCount} entities processed successfully`)
-  return { results, stopped: false, successCount }
+    // Check if GA4 Config Tag is already in the conflict results
+    const hasConfigTag = sorted.some(item => item.entityName === GA4_CONFIG_TAG_NAME)
+
+    logger.info('GTM-API', `Starting execution — ${sorted.length} entities to process`)
+
+    // Auto-create GA4 Config Tag before event tags if not already in the items
+    if (!hasConfigTag) {
+      try {
+        const configPayload = buildGa4ConfigTagPayload(measurementId)
+        logger.info('GTM-API', `Creating tag "${GA4_CONFIG_TAG_NAME}" (auto)...`)
+        await createTag(token, workspacePath, configPayload as never)
+        logger.success('GTM-API', `CREATED tag "${GA4_CONFIG_TAG_NAME}" (auto)`)
+        results.push({ entityName: GA4_CONFIG_TAG_NAME, entityType: 'tag', action: 'CREATED' })
+        onProgress([...results])
+        successCount++
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error'
+        logger.error('GTM-API', `ERROR tag "${GA4_CONFIG_TAG_NAME}": ${msg}`)
+        results.push({ entityName: GA4_CONFIG_TAG_NAME, entityType: 'tag', action: 'ERROR', errorMessage: msg })
+        onProgress([...results])
+        return { results, stopped: true, stoppedAt: GA4_CONFIG_TAG_NAME, successCount }
+      }
+    }
+
+    for (const item of sorted) {
+      try {
+        const { result, apiEntity } = await executeOne(item, token, workspacePath, triggerMap, logger)
+        results.push(result)
+        onProgress([...results])
+
+        // Track trigger IDs from newly created/updated triggers
+        if (item.entityType === 'trigger' && apiEntity) {
+          const id = extractTriggerId(apiEntity)
+          if (id) triggerMap.set(item.entityName, id)
+        }
+
+        if (result.action !== 'ERROR') {
+          successCount++
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error'
+        logger.error('GTM-API', `ERROR ${item.entityType} "${item.entityName}": ${msg}`)
+        results.push({
+          entityName: item.entityName,
+          entityType: item.entityType,
+          action: 'ERROR',
+          errorMessage: msg,
+        })
+        onProgress([...results])
+
+        return { results, stopped: true, stoppedAt: item.entityName, successCount }
+      }
+    }
+
+    logger.success('GTM-API', `Execution complete — ${successCount} entities processed successfully`)
+    return { results, stopped: false, successCount }
+  } finally {
+    attachLogger(null)
+  }
 }

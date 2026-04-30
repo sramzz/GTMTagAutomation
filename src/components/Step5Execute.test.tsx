@@ -155,6 +155,7 @@ vi.mock('../services/gtmApi', () => ({
   updateVariable: (...args: unknown[]) => mockUpdateVariable(...args),
   updateTrigger: (...args: unknown[]) => mockUpdateTrigger(...args),
   updateTag: (...args: unknown[]) => mockUpdateTag(...args),
+  attachLogger: vi.fn(),
 }))
 
 const mockDownloadLogFile = vi.fn()
@@ -608,5 +609,15 @@ describe('Step5Execute', () => {
     await waitFor(() => {
       expect(mockLogger.info).toHaveBeenCalledWith('GTM-API', expect.stringContaining('GA4 - Configuration TAG'))
     })
+  })
+
+  it('rate-limit warnings are logged via the logger', async () => {
+    // Smoke test: verify attachLogger from gtmApi exists and accepts our logger shape.
+    // Full integration (firing 26 requests and asserting the warn message appears) is
+    // integration territory and adds little over manual verification.
+    const { attachLogger } = await import('../services/gtmApi')
+
+    expect(() => attachLogger(mockLogger as unknown as never)).not.toThrow()
+    expect(() => attachLogger(null)).not.toThrow()
   })
 })

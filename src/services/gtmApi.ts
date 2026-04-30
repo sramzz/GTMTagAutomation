@@ -16,11 +16,23 @@ import type {
   GtmTagPayload,
 } from '../types'
 import { RateLimiter } from './rateLimiter'
+import type { Logger } from '../logging/logger'
 
 const BASE_URL = 'https://www.googleapis.com/tagmanager/v2'
 const MAX_RETRIES = 5
 const RATE_LIMIT_MAX = 25
 const RATE_LIMIT_WINDOW_MS = 60_000
+
+// Module-level reference to the active logger. Set via attachLogger() from the execution
+// engine so rate-limit waits and retries appear in the on-screen activity log.
+// Why a module-level reference: gtmFetch is called from many places, and threading the
+// logger through every public function would be noisy. We have one session at a time, so a
+// module-level "current logger" is the simplest correct model.
+let activeLogger: Logger | null = null
+
+export function attachLogger(logger: Logger | null): void {
+  activeLogger = logger
+}
 
 // Module-level limiter — shared across all API calls. Why module-level: there is one
 // browser tab making sequential requests, and the quota is per-user, so a singleton matches reality.
@@ -28,8 +40,12 @@ const rateLimiter = new RateLimiter({
   maxRequests: RATE_LIMIT_MAX,
   windowMs: RATE_LIMIT_WINDOW_MS,
   onWait: (waitMs, used, limit) => {
-    // Temporarily log via console.warn — wired to the proper logger in Task 4.
-    console.warn(`[GTM-API] Rate limit reached (${used}/${limit} used in last 60s). Waiting ${(waitMs / 1000).toFixed(1)}s before next request...`)
+    const message = `Rate limit reached (${used}/${limit} used in last 60s). Waiting ${(waitMs / 1000).toFixed(1)}s before next request...`
+    if (activeLogger) {
+      activeLogger.warn('GTM-API', message)
+    } else {
+      console.warn(`[GTM-API] ${message}`)
+    }
   },
 })
 
@@ -62,7 +78,12 @@ async function gtmFetch(token: string, url: string, options: RequestInit = {}): 
       // Reactive backoff: prefer the server's Retry-After hint, fall back to exponential.
       const retryAfter = parseRetryAfter(response.headers.get('Retry-After'))
       const delay = retryAfter ?? Math.min(Math.pow(2, attempt) * 1000, 60_000)
-      console.warn(`[GTM-API] 429 received (attempt ${attempt + 1}/${MAX_RETRIES + 1}). Waiting ${(delay / 1000).toFixed(1)}s before retry...`)
+      const retryMessage = `429 received (attempt ${attempt + 1}/${MAX_RETRIES + 1}). Waiting ${(delay / 1000).toFixed(1)}s before retry...`
+      if (activeLogger) {
+        activeLogger.warn('GTM-API', retryMessage)
+      } else {
+        console.warn(`[GTM-API] ${retryMessage}`)
+      }
       await new Promise(resolve => setTimeout(resolve, delay))
       lastError = new Error(`Rate limited (attempt ${attempt + 1} of ${MAX_RETRIES + 1})`)
       continue
