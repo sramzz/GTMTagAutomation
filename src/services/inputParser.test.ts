@@ -96,14 +96,14 @@ describe('getEntitiesFromMasterMapping', () => {
     expect(result.tags[0].name).toBe('GA4 Event - view_item_list')
   })
 
-  it('produces variables and trigger but NO tag for a SYSTEM entry', () => {
+  it('produces no event tag for a SYSTEM entry', () => {
     const result = getEntitiesFromMasterMapping([systemEntry], 'G-TEST12345')
     expect(result.variables).toHaveLength(1)
     expect(result.triggers).toHaveLength(1)
     expect(result.tags).toHaveLength(1) // includes GA4 Config Tag
   })
 
-  it('produces nothing for a SKIP entry', () => {
+  it('produces no event tag, trigger, or variables for a SKIP entry', () => {
     const result = getEntitiesFromMasterMapping([skipEntry], 'G-TEST12345')
     expect(result.variables).toHaveLength(0)
     expect(result.triggers).toHaveLength(0)
