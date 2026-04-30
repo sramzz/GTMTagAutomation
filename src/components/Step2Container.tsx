@@ -1,5 +1,5 @@
-// Step2Container.tsx — Step 2 of the wizard: account, container, and GA4 Measurement ID selection.
-// Fetches GTM accounts/containers, validates the Measurement ID, checks workspace limits, and creates a dated workspace.
+// Step2Container.tsx — Step 2 of the wizard: account, container, workspace, and GA4 Measurement ID selection.
+// Fetches GTM accounts/containers/workspaces, validates the Measurement ID, and selects or creates a workspace.
 
 import { useEffect, useState } from 'react'
 import { listAccounts, listContainers, listWorkspaces, createWorkspace } from '../services/gtmApi'
@@ -18,8 +18,9 @@ const MEASUREMENT_ID_REGEX = /^G-[A-Z0-9]{7,10}$/
 // Free GTM allows at most 3 workspaces per container
 const MAX_WORKSPACES = 3
 
-// Project decision: always create a new dated workspace per session for traceability.
-// We intentionally do not reuse existing "S4D Automation" workspaces.
+// Sentinel value for the "create new dated workspace" dropdown option.
+// All other option values are real workspace paths.
+const CREATE_NEW_WORKSPACE = '__create_new__'
 
 export function Step2Container({ accessToken, onContainerSelected }: Step2ContainerProps) {
   const { logger } = useLog()
@@ -32,32 +33,39 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
   const [measurementIdError, setMeasurementIdError] = useState('')
   const [error, setError] = useState('')
   const [workspaceWarning, setWorkspaceWarning] = useState('')
+  const [workspaces, setWorkspaces] = useState<GtmWorkspace[]>([])
+  const [selectedWorkspaceValue, setSelectedWorkspaceValue] = useState('')
   // Prevents the Next button from enabling before the workspace count API call completes
   const [workspaceCheckDone, setWorkspaceCheckDone] = useState(false)
   const [loading, setLoading] = useState(false)
 
   // Fetch accounts on mount
   useEffect(() => {
-    fetchAccounts()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function fetchAccounts() {
+    let cancelled = false
     logger.info('GTM-API', 'Fetching accounts...')
-    try {
-      const result = await listAccounts(accessToken)
+
+    listAccounts(accessToken).then(result => {
+      if (cancelled) return
       logger.success('GTM-API', `Fetched ${result.length} accounts`)
       setAccounts(result)
-    } catch (err) {
+    }).catch(err => {
+      if (cancelled) return
       const msg = err instanceof Error ? err.message : 'Failed to fetch accounts'
       logger.error('GTM-API', msg)
       setError(msg)
+    })
+
+    return () => {
+      cancelled = true
     }
-  }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleAccountChange(accountPath: string) {
     setSelectedAccountPath(accountPath)
     setSelectedContainerPath('')
     setContainers([])
+    setWorkspaces([])
+    setSelectedWorkspaceValue('')
     setWorkspaceWarning('')
     setWorkspaceCheckDone(false)
     setError('')
@@ -78,6 +86,8 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
 
   async function handleContainerChange(containerPath: string) {
     setSelectedContainerPath(containerPath)
+    setWorkspaces([])
+    setSelectedWorkspaceValue('')
     setWorkspaceWarning('')
     setWorkspaceCheckDone(false)
     setError('')
@@ -86,11 +96,12 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
 
     logger.info('GTM-API', `Checking workspaces for ${containerPath}...`)
     try {
-      const workspaces = await listWorkspaces(accessToken, containerPath)
-      logger.success('GTM-API', `Found ${workspaces.length} existing workspaces`)
+      const result = await listWorkspaces(accessToken, containerPath)
+      logger.success('GTM-API', `Found ${result.length} existing workspaces`)
+      setWorkspaces(result)
 
-      if (workspaces.length >= MAX_WORKSPACES) {
-        const msg = `This container has ${workspaces.length} workspaces (maximum ${MAX_WORKSPACES}). Delete or publish an existing workspace in GTM before continuing.`
+      if (result.length >= MAX_WORKSPACES) {
+        const msg = `This container has ${result.length} workspaces (maximum ${MAX_WORKSPACES}). Pick an existing workspace below, or delete one in GTM to create a new one.`
         logger.warn('GTM-API', msg)
         setWorkspaceWarning(msg)
       }
@@ -112,13 +123,20 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
     }
   }
 
+  const today = new Date().toISOString().slice(0, 10)
+  const todayWorkspaceName = `S4D Automation - ${today}`
+  const todayWorkspaceExists = workspaces.some(w => w.name === todayWorkspaceName)
+  const atWorkspaceLimit = workspaces.length >= MAX_WORKSPACES
+  const canCreateNew = !todayWorkspaceExists && !atWorkspaceLimit
+
   const selectedContainer = containers.find(c => c.path === selectedContainerPath)
-  const isValid =
+  const isValid = Boolean(
     selectedAccountPath &&
     selectedContainerPath &&
     MEASUREMENT_ID_REGEX.test(measurementId) &&
-    !workspaceWarning &&
-    workspaceCheckDone
+    workspaceCheckDone &&
+    selectedWorkspaceValue
+  )
 
   async function handleNext() {
     if (!selectedContainer || !isValid) return
@@ -126,17 +144,26 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
     setLoading(true)
     setError('')
 
-    const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
-    const workspaceName = `S4D Automation - ${today}`
-
-    logger.info('GTM-API', `Creating workspace "${workspaceName}"...`)
     try {
-      const workspace = await createWorkspace(accessToken, selectedContainerPath, workspaceName)
-      logger.success('GTM-API', `Created workspace "${workspace.name}"`)
+      let workspace: GtmWorkspace
+
+      if (selectedWorkspaceValue === CREATE_NEW_WORKSPACE) {
+        logger.info('GTM-API', `Creating workspace "${todayWorkspaceName}"...`)
+        workspace = await createWorkspace(accessToken, selectedContainerPath, todayWorkspaceName)
+        logger.success('GTM-API', `Created workspace "${workspace.name}"`)
+      } else {
+        const existing = workspaces.find(w => w.path === selectedWorkspaceValue)
+        if (!existing) {
+          throw new Error('Selected workspace not found')
+        }
+        workspace = existing
+        logger.info('GTM-API', `Reusing existing workspace "${workspace.name}"`)
+      }
+
       logger.success('WIZARD', 'Step 2 complete — container and workspace selected')
       onContainerSelected(selectedContainer, workspace, measurementId)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to create workspace'
+      const msg = err instanceof Error ? err.message : 'Failed to select workspace'
       logger.error('GTM-API', msg)
       setError(msg)
     } finally {
@@ -194,6 +221,29 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
         </select>
       </div>
 
+      {selectedContainerPath && workspaceCheckDone && (
+        <div className="step2-field">
+          <label htmlFor="workspace-select">Workspace</label>
+          <select
+            id="workspace-select"
+            value={selectedWorkspaceValue}
+            onChange={e => setSelectedWorkspaceValue(e.target.value)}
+          >
+            <option value="">-- Select a workspace --</option>
+            {canCreateNew && (
+              <option value={CREATE_NEW_WORKSPACE}>
+                Create new: {todayWorkspaceName}
+              </option>
+            )}
+            {workspaces.map(w => (
+              <option key={w.workspaceId} value={w.path}>
+                {w.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div className="step2-field">
         <label htmlFor="measurement-id">GA4 Measurement ID</label>
         <input
@@ -219,7 +269,7 @@ export function Step2Container({ accessToken, onContainerSelected }: Step2Contai
           onClick={handleNext}
           disabled={!isValid || loading}
         >
-          {loading ? 'Creating workspace...' : 'Next'}
+          {loading ? 'Selecting workspace...' : 'Next'}
         </button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-// Step2Container.test.tsx — Tests for account/container selection, GA4 validation, and workspace creation.
+// Step2Container.test.tsx — Tests for account/container/workspace selection and GA4 validation.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
@@ -68,15 +68,17 @@ describe('Step2Container', () => {
     mockCreateWorkspace.mockResolvedValue(createdWorkspace)
   })
 
-  // Shared helper: renders, waits for accounts, selects account + container + measurement ID
+  // Shared helper: renders, waits for accounts, selects account + container + workspace + measurement ID
   async function renderAndFillForm(user: ReturnType<typeof userEvent.setup>) {
     render(<Step2Container accessToken={TOKEN} onContainerSelected={mockOnContainerSelected} />)
     await waitFor(() => expect(screen.getByText('Acme Corp')).toBeInTheDocument())
     await user.selectOptions(screen.getByLabelText(/account/i), 'accounts/111')
     await waitFor(() => expect(screen.getByText('Web Prod (GTM-ABC123)')).toBeInTheDocument())
     await user.selectOptions(screen.getByLabelText(/container/i), 'accounts/111/containers/c1')
-    await user.type(screen.getByLabelText(/measurement id/i), 'G-ABC1234567')
     await waitFor(() => expect(mockListWorkspaces).toHaveBeenCalled())
+    await waitFor(() => expect(screen.getByLabelText(/workspace/i)).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/workspace/i), '__create_new__')
+    await user.type(screen.getByLabelText(/measurement id/i), 'G-ABC1234567')
   }
 
   // --- Fetches and displays account list on mount ---
@@ -204,7 +206,7 @@ describe('Step2Container', () => {
     expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
   })
 
-  it('enables Next button when account, container, and valid Measurement ID are set', async () => {
+  it('enables Next button when account, container, workspace, and valid Measurement ID are set', async () => {
     const user = userEvent.setup()
     await renderAndFillForm(user)
 
@@ -213,7 +215,7 @@ describe('Step2Container', () => {
 
   // --- Checks workspace count and warns if at limit ---
 
-  it('shows workspace limit warning when container has 3 workspaces', async () => {
+  it('shows workspace limit warning when container has 3 workspaces but lets user pick an existing one', async () => {
     const threeWorkspaces: GtmWorkspace[] = [
       { workspaceId: 'w1', name: 'WS 1', path: 'p/w1' },
       { workspaceId: 'w2', name: 'WS 2', path: 'p/w2' },
@@ -239,9 +241,28 @@ describe('Step2Container', () => {
       expect(screen.getByText(/3 workspaces \(maximum 3\)/i)).toBeInTheDocument()
     })
 
-    // Next button should be disabled even with valid Measurement ID
+    // Even with a valid Measurement ID, Next is disabled until a workspace is picked
     await user.type(screen.getByLabelText(/measurement id/i), 'G-ABC1234567')
     expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
+
+    await user.selectOptions(screen.getByLabelText(/workspace/i), 'p/w1')
+    expect(screen.getByRole('button', { name: /next/i })).toBeEnabled()
+  })
+
+  it('shows a workspace dropdown after container is selected, listing existing workspaces plus a "create new" option', async () => {
+    const user = userEvent.setup()
+    render(<Step2Container accessToken={TOKEN} onContainerSelected={mockOnContainerSelected} />)
+
+    await waitFor(() => expect(screen.getByText('Acme Corp')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/account/i), 'accounts/111')
+    await waitFor(() => expect(screen.getByText('Web Prod (GTM-ABC123)')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/container/i), 'accounts/111/containers/c1')
+
+    await waitFor(() => expect(screen.getByLabelText(/workspace/i)).toBeInTheDocument())
+
+    const workspaceSelect = screen.getByLabelText(/workspace/i)
+    expect(workspaceSelect).toHaveTextContent('Default Workspace')
+    expect(workspaceSelect).toHaveTextContent(/Create new/i)
   })
 
   // --- Creates dated workspace on "Next" click ---
@@ -267,6 +288,76 @@ describe('Step2Container', () => {
         'G-ABC1234567'
       )
     })
+  })
+
+  it('reuses an existing workspace without calling createWorkspace when one is selected', async () => {
+    const user = userEvent.setup()
+    render(<Step2Container accessToken={TOKEN} onContainerSelected={mockOnContainerSelected} />)
+
+    await waitFor(() => expect(screen.getByText('Acme Corp')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/account/i), 'accounts/111')
+    await waitFor(() => expect(screen.getByText('Web Prod (GTM-ABC123)')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/container/i), 'accounts/111/containers/c1')
+    await waitFor(() => expect(screen.getByLabelText(/workspace/i)).toBeInTheDocument())
+
+    await user.selectOptions(
+      screen.getByLabelText(/workspace/i),
+      'accounts/111/containers/c1/workspaces/w1'
+    )
+    await user.type(screen.getByLabelText(/measurement id/i), 'G-ABC1234567')
+    await user.click(screen.getByRole('button', { name: /next/i }))
+
+    await waitFor(() => {
+      expect(mockOnContainerSelected).toHaveBeenCalledWith(
+        mockContainers[0],
+        mockWorkspaces[0],
+        'G-ABC1234567'
+      )
+    })
+    expect(mockCreateWorkspace).not.toHaveBeenCalled()
+  })
+
+  it('hides the "Create new" option when today\'s dated workspace already exists', async () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const todaysWorkspace: GtmWorkspace = {
+      workspaceId: 'wToday',
+      name: `S4D Automation - ${today}`,
+      path: 'accounts/111/containers/c1/workspaces/wToday',
+    }
+    mockListWorkspaces.mockResolvedValue([mockWorkspaces[0], todaysWorkspace])
+
+    const user = userEvent.setup()
+    render(<Step2Container accessToken={TOKEN} onContainerSelected={mockOnContainerSelected} />)
+    await waitFor(() => expect(screen.getByText('Acme Corp')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/account/i), 'accounts/111')
+    await waitFor(() => expect(screen.getByText('Web Prod (GTM-ABC123)')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/container/i), 'accounts/111/containers/c1')
+
+    await waitFor(() => expect(screen.getByLabelText(/workspace/i)).toBeInTheDocument())
+    const workspaceSelect = screen.getByLabelText(/workspace/i)
+    expect(workspaceSelect).not.toHaveTextContent(/Create new/i)
+    expect(workspaceSelect).toHaveTextContent(`S4D Automation - ${today}`)
+  })
+
+  it('hides the "Create new" option when the container is at the workspace limit', async () => {
+    const threeWorkspaces: GtmWorkspace[] = [
+      { workspaceId: 'w1', name: 'WS 1', path: 'p/w1' },
+      { workspaceId: 'w2', name: 'WS 2', path: 'p/w2' },
+      { workspaceId: 'w3', name: 'WS 3', path: 'p/w3' },
+    ]
+    mockListWorkspaces.mockResolvedValue(threeWorkspaces)
+
+    const user = userEvent.setup()
+    render(<Step2Container accessToken={TOKEN} onContainerSelected={mockOnContainerSelected} />)
+    await waitFor(() => expect(screen.getByText('Acme Corp')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/account/i), 'accounts/111')
+    await waitFor(() => expect(screen.getByText('Web Prod (GTM-ABC123)')).toBeInTheDocument())
+    await user.selectOptions(screen.getByLabelText(/container/i), 'accounts/111/containers/c1')
+
+    await waitFor(() => expect(screen.getByLabelText(/workspace/i)).toBeInTheDocument())
+    const workspaceSelect = screen.getByLabelText(/workspace/i)
+    expect(workspaceSelect).not.toHaveTextContent(/Create new/i)
+    expect(workspaceSelect).toHaveTextContent('WS 1')
   })
 
   // --- Logs all API calls and results ---
