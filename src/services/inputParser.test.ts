@@ -229,4 +229,15 @@ describe('getEntitiesFromAuditJson', () => {
       expect(nameParam!.value).toBe('promotion_id')
     }
   })
+
+  it('includes the GA4 Configuration Tag in the tags list', () => {
+    const audit = { view_item: { count: 1, variables: ['ecommerce.value'] } }
+    const masterEntries: MasterMappingEntry[] = []  // no master match → audit-JSON branch
+
+    const result = getEntitiesFromAuditJson(audit, masterEntries, 'G-TEST12345')
+
+    const configTag = result.tags.find(t => t.name === 'GA4 - Configuration TAG')
+    expect(configTag).toBeDefined()
+    expect(configTag?.type).toBe('gaawc')
+  })
 })

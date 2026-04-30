@@ -172,5 +172,9 @@ export function getEntitiesFromAuditJson(
     }
   }
 
+  // Always include the GA4 Configuration Tag — mirrors getEntitiesFromMasterMapping
+  // so Step 4 conflict detection sees it regardless of which path produced entities.
+  tags.push(buildGa4ConfigTagPayload(measurementId))
+
   return { variables, triggers, tags }
 }
