@@ -92,7 +92,7 @@ describe('getEntitiesFromMasterMapping', () => {
     expect(result.variables[0].name).toBe('DLV - ecommerce.items')
     expect(result.triggers).toHaveLength(1)
     expect(result.triggers[0].name).toBe('CE - view_item_list')
-    expect(result.tags).toHaveLength(1)
+    expect(result.tags).toHaveLength(2) // includes GA4 Config Tag
     expect(result.tags[0].name).toBe('GA4 Event - view_item_list')
   })
 
@@ -100,14 +100,14 @@ describe('getEntitiesFromMasterMapping', () => {
     const result = getEntitiesFromMasterMapping([systemEntry], 'G-TEST12345')
     expect(result.variables).toHaveLength(1)
     expect(result.triggers).toHaveLength(1)
-    expect(result.tags).toHaveLength(0)
+    expect(result.tags).toHaveLength(1) // includes GA4 Config Tag
   })
 
   it('produces nothing for a SKIP entry', () => {
     const result = getEntitiesFromMasterMapping([skipEntry], 'G-TEST12345')
     expect(result.variables).toHaveLength(0)
     expect(result.triggers).toHaveLength(0)
-    expect(result.tags).toHaveLength(0)
+    expect(result.tags).toHaveLength(1) // includes GA4 Config Tag
   })
 
   it('deduplicates variables shared across multiple events', () => {
@@ -125,7 +125,41 @@ describe('getEntitiesFromMasterMapping', () => {
     const result = getEntitiesFromMasterMapping([liveMappingEntry, entry2], 'G-TEST12345')
     expect(result.variables).toHaveLength(1)
     expect(result.triggers).toHaveLength(2)
-    expect(result.tags).toHaveLength(2)
+    expect(result.tags).toHaveLength(3) // includes GA4 Config Tag
+  })
+
+  it('includes the GA4 Configuration Tag in the tags list', () => {
+    const entries: MasterMappingEntry[] = [
+      {
+        id: 1, category: 'cat', dataLayerEvent: 'view_item',
+        ga4EventName: 'view_item', whenItFires: '', status: 'LIVE',
+        gtmVariables: [], gtmTriggerName: 'CE - view_item',
+        gtmTagName: 'GA4 Event - view_item', ga4Parameters: [],
+      },
+    ]
+
+    const result = getEntitiesFromMasterMapping(entries, 'G-TEST12345')
+
+    const configTag = result.tags.find(t => t.name === 'GA4 - Configuration TAG')
+    expect(configTag).toBeDefined()
+    expect(configTag?.type).toBe('gaawc')
+    // The measurementId is wired through to the config tag, not just hardcoded
+    const measurementParam = configTag?.parameter.find(
+      (p): p is { type: string; key: string; value: string } => 'value' in p && p.key === 'measurementId'
+    )
+    expect(measurementParam?.value).toBe('G-TEST12345')
+  })
+
+  it('includes exactly one Config Tag even with many event tags', () => {
+    const entries: MasterMappingEntry[] = [
+      { id: 1, category: 'c', dataLayerEvent: 'a', ga4EventName: 'a', whenItFires: '', status: 'LIVE', gtmVariables: [], gtmTriggerName: 'CE - a', gtmTagName: 'GA4 Event - a', ga4Parameters: [] },
+      { id: 2, category: 'c', dataLayerEvent: 'b', ga4EventName: 'b', whenItFires: '', status: 'LIVE', gtmVariables: [], gtmTriggerName: 'CE - b', gtmTagName: 'GA4 Event - b', ga4Parameters: [] },
+    ]
+
+    const result = getEntitiesFromMasterMapping(entries, 'G-TEST12345')
+
+    const configTags = result.tags.filter(t => t.name === 'GA4 - Configuration TAG')
+    expect(configTags).toHaveLength(1)
   })
 })
 

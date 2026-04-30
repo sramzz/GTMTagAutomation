@@ -12,6 +12,7 @@ import {
   buildVariablePayload,
   buildTriggerPayload,
   buildGa4EventTagPayload,
+  buildGa4ConfigTagPayload,
 } from './entityBuilder'
 
 // --- Audit JSON parsing ---
@@ -87,6 +88,11 @@ export function getEntitiesFromMasterMapping(
       ))
     }
   }
+
+  // Always include the GA4 Configuration Tag — Step 4 will detect if it
+  // already exists in the workspace and Step 5 will skip/overwrite/create it
+  // through the same flow as every other tag.
+  tags.push(buildGa4ConfigTagPayload(measurementId))
 
   return { variables, triggers, tags }
 }
