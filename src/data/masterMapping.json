@@ -83,8 +83,8 @@
         { "dlvPath": "search_term", "gtmVarName": "DLV - search_term" },
         { "dlvPath": "search_term_selected", "gtmVarName": "DLV - search_term_selected" }
       ],
-      "gtmTriggerName": "CE - search (NEW)",
-      "gtmTagName": "GA4 Event - search (NEW)",
+      "gtmTriggerName": "CE - search",
+      "gtmTagName": "GA4 Event - search",
       "ga4Parameters": [
         { "paramName": "search_term", "gtmVarRef": "{{DLV - search_term}}" },
         { "paramName": "search_term_selected", "gtmVarRef": "{{DLV - search_term_selected}}" }
@@ -131,7 +131,7 @@
         { "dlvPath": "size", "gtmVarName": "DLV - size" }
       ],
       "gtmTriggerName": "CE - eecAddToCart",
-      "gtmTagName": "GA4 Event - add_to_cart (cross-sell) (NEW)",
+      "gtmTagName": "GA4 Event - add_to_cart (cross-sell)",
       "ga4Parameters": [
         { "paramName": "currency", "gtmVarRef": "{{DLV - ecommerce.currencyCode}}" },
         { "paramName": "items", "gtmVarRef": "{{DLV - ecommerce.add.products}}" },
@@ -171,7 +171,7 @@
         { "dlvPath": "ecommerce.remove.products", "gtmVarName": "DLV - ecommerce.remove.products" }
       ],
       "gtmTriggerName": "CE - eecRemoveFromCart",
-      "gtmTagName": "GA4 Event - remove_from_cart (product) (NEW)",
+      "gtmTagName": "GA4 Event - remove_from_cart (product)",
       "ga4Parameters": [
         { "paramName": "currency", "gtmVarRef": "{{DLV - ecommerce.currencyCode}}" },
         { "paramName": "items", "gtmVarRef": "{{DLV - ecommerce.remove.products}}" }
@@ -188,8 +188,8 @@
         { "dlvPath": "coupon_code", "gtmVarName": "DLV - coupon_code" },
         { "dlvPath": "status", "gtmVarName": "DLV - status" }
       ],
-      "gtmTriggerName": "CE - add_coupon (NEW)",
-      "gtmTagName": "GA4 Event - add_coupon (NEW)",
+      "gtmTriggerName": "CE - add_coupon",
+      "gtmTagName": "GA4 Event - add_coupon",
       "ga4Parameters": [
         { "paramName": "coupon_code", "gtmVarRef": "{{DLV - coupon_code}}" },
         { "paramName": "status", "gtmVarRef": "{{DLV - status}}" }
@@ -206,8 +206,8 @@
         { "dlvPath": "events.Couponcode", "gtmVarName": "DLV - events.Couponcode" },
         { "dlvPath": "events.Couponname", "gtmVarName": "DLV - events.Couponname" }
       ],
-      "gtmTriggerName": "CE - couponcode (NEW)",
-      "gtmTagName": "GA4 Event - coupon_applied (NEW)",
+      "gtmTriggerName": "CE - couponcode",
+      "gtmTagName": "GA4 Event - coupon_applied",
       "ga4Parameters": [
         { "paramName": "coupon_code", "gtmVarRef": "{{DLV - events.Couponcode}}" },
         { "paramName": "coupon_name", "gtmVarRef": "{{DLV - events.Couponname}}" }
@@ -379,8 +379,8 @@
         { "dlvPath": "account_type", "gtmVarName": "DLV - account_type" },
         { "dlvPath": "email_consent", "gtmVarName": "DLV - email_consent" }
       ],
-      "gtmTriggerName": "CE - register (NEW)",
-      "gtmTagName": "GA4 Event - sign_up (NEW)",
+      "gtmTriggerName": "CE - register",
+      "gtmTagName": "GA4 Event - sign_up",
       "ga4Parameters": [
         { "paramName": "method", "gtmVarRef": "{{DLV - events.method}}" },
         { "paramName": "register_step", "gtmVarRef": "{{DLV - register_step}}" },
@@ -399,8 +399,8 @@
       "gtmVariables": [
         { "dlvPath": "events.method", "gtmVarName": "DLV - events.method" }
       ],
-      "gtmTriggerName": "CE - account_creation (NEW)",
-      "gtmTagName": "GA4 Event - account_created (NEW)",
+      "gtmTriggerName": "CE - account_creation",
+      "gtmTagName": "GA4 Event - account_created",
       "ga4Parameters": [
         { "paramName": "method", "gtmVarRef": "{{DLV - events.method}}" }
       ]
