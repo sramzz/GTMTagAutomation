@@ -43,9 +43,14 @@ describe('Step1Auth', () => {
     expect(screen.getByRole('button', { name: /sign in with google/i })).toBeInTheDocument()
   })
 
-  it('shows a description of what the step does', () => {
+  it('shows the tool tagline and prerequisites', () => {
     render(<Step1Auth onAuthenticated={mockOnAuthenticated} />)
-    expect(screen.getByText(/sign in with your google account/i)).toBeInTheDocument()
+    expect(screen.getByText(/creates variables, triggers, and tags/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /before you start/i })).toBeInTheDocument()
+    expect(screen.getByText(/editor access/i)).toBeInTheDocument()
+    expect(screen.getByText(/measurement id/i)).toBeInTheDocument()
+    expect(screen.getByText(/s4d standard/i)).toBeInTheDocument()
+    expect(screen.getByText(/custom audit/i)).toBeInTheDocument()
   })
 
   it('calls onAuthenticated when token is found in URL hash on mount', async () => {

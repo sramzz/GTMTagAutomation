@@ -2,13 +2,52 @@
 
 .step1-auth h2 {
   font-size: 1.125rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   color: #666;
 }
 
-.step1-auth p {
-  margin-bottom: 1rem;
+.step1-tagline {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 1.25rem;
   line-height: 1.5;
+}
+
+.step1-prereqs {
+  background: #f5f7fa;
+  border-radius: 4px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.step1-prereqs h3 {
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem;
+  color: #333;
+}
+
+.step1-prereqs ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #333;
+}
+
+.step1-prereqs ul ul {
+  margin: 0.25rem 0 0.25rem;
+}
+
+.step1-prereqs li {
+  margin-bottom: 0.35rem;
+}
+
+.step1-prereqs code {
+  font-family: monospace;
+  background: #eaecef;
+  padding: 0 0.25rem;
+  border-radius: 3px;
+  font-size: 0.85rem;
 }
 
 .auth-error {
@@ -18,10 +57,4 @@
   border-radius: 4px;
   margin-bottom: 1rem;
   font-size: 0.9rem;
-}
-
-.auth-note {
-  margin-top: 1.5rem;
-  font-size: 0.85rem;
-  color: #888;
 }

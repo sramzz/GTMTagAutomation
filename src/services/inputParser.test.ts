@@ -172,8 +172,8 @@ describe('getEntitiesFromMasterMapping', () => {
       .toEqual(['__PENDING_TRIGGER_ID__:EEC purchase'])
     expect(result.tags.find(t => t.name === 'GA4 Event - begin_checkout')?.firingTriggerId)
       .toEqual(['__PENDING_TRIGGER_ID__:CE - eecCheckout'])
-    expect(result.tags.find(t => t.name === 'GA4 Event - coupon_applied (NEW)')?.firingTriggerId)
-      .toEqual(['__PENDING_TRIGGER_ID__:CE - couponcode (NEW)'])
+    expect(result.tags.find(t => t.name === 'GA4 Event - coupon_applied')?.firingTriggerId)
+      .toEqual(['__PENDING_TRIGGER_ID__:CE - couponcode'])
   })
 })
 

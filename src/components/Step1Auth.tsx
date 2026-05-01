@@ -1,5 +1,6 @@
 // Step1Auth.tsx — Step 1 of the wizard: Google OAuth authentication.
-// Shows a sign-in button. On return from Google, parses the access token from the URL hash.
+// Shows prerequisites, a sign-in button, and on return from Google parses the access
+// token from the URL hash.
 
 import { useEffect, useState } from 'react'
 import { buildOAuthUrl, parseTokenFromHash } from '../services/auth'
@@ -45,7 +46,38 @@ export function Step1Auth({ onAuthenticated }: Step1AuthProps) {
   return (
     <div className="step1-auth">
       <h2>Step 1 of 5</h2>
-      <p>Sign in with your Google account to access GTM containers.</p>
+      <p className="step1-tagline">
+        GTM Automation Tool: creates variables, triggers, and tags in your GTM workspace.
+      </p>
+
+      <section className="step1-prereqs" aria-labelledby="step1-prereqs-heading">
+        <h3 id="step1-prereqs-heading">Before you start</h3>
+        <ul>
+          <li>
+            Sign in with a <strong>@solutions4delivery.com</strong> Google account.
+          </li>
+          <li>
+            That account needs <strong>Editor access</strong> on the target GTM container.
+          </li>
+          <li>
+            Have the container's <strong>GA4 Measurement ID</strong> ready (e.g. <code>G-XXXXXXX</code>).
+          </li>
+          <li>
+            The container must have <strong>fewer than 3 workspaces</strong>, or an existing workspace you can reuse.
+          </li>
+          <li>
+            Pick a data layer source (you'll choose in Step 3):
+            <ul>
+              <li>
+                <strong>S4D Standard</strong> — the default mapping from the April 2026 audit. No prep needed.
+              </li>
+              <li>
+                <strong>Custom audit</strong> — run the audit script across every page of the site, then upload the resulting JSON. Step 3 has the script and instructions.
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </section>
 
       {error && (
         <div className="auth-error" role="alert">
@@ -56,10 +88,6 @@ export function Step1Auth({ onAuthenticated }: Step1AuthProps) {
       <button className="btn-primary" onClick={handleSignIn}>
         Sign in with Google
       </button>
-
-      <p className="auth-note">
-        You need Editor access to the target GTM container. The app will request permission to read and edit your GTM configuration.
-      </p>
     </div>
   )
 }

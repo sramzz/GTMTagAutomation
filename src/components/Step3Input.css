@@ -101,3 +101,68 @@
 .step3-actions {
   margin-top: 1.5rem;
 }
+
+.step3-audit-help {
+  background: #f5f7fa;
+  border-radius: 4px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.step3-audit-help p {
+  margin: 0 0 0.75rem;
+}
+
+.step3-download {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  background: #1a73e8;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.step3-download:hover {
+  background: #1765c1;
+}
+
+.step3-howto {
+  margin-top: 0.75rem;
+}
+
+.step3-howto summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #1a73e8;
+  font-size: 0.85rem;
+}
+
+.step3-howto ol {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.step3-howto li {
+  margin-bottom: 0.35rem;
+}
+
+.step3-howto code {
+  font-family: monospace;
+  background: #eaecef;
+  padding: 0 0.25rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+
+.step3-howto kbd {
+  font-family: monospace;
+  background: #eaecef;
+  border: 1px solid #c1c7cd;
+  border-radius: 3px;
+  padding: 0 0.3rem;
+  font-size: 0.8rem;
+}

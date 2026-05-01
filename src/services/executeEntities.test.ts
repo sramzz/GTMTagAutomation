@@ -159,13 +159,13 @@ describe('executeAll', () => {
 
   it('resolves a named pending trigger ID from a skipped existing trigger conflict', async () => {
     ;(gtmApi.createTag as ReturnType<typeof vi.fn>).mockResolvedValue(
-      mockEntity('GA4 Event - coupon_applied (NEW)', 'workspaces/1/tags/15')
+      mockEntity('GA4 Event - coupon_applied', 'workspaces/1/tags/15')
     )
 
     await executeAll(
       [
-        triggerResult('CE - couponcode (NEW)', 'CONFLICT', '77'),
-        tagResult('GA4 Event - coupon_applied (NEW)', '__PENDING_TRIGGER_ID__:CE - couponcode (NEW)'),
+        triggerResult('CE - couponcode', 'CONFLICT', '77'),
+        tagResult('GA4 Event - coupon_applied', '__PENDING_TRIGGER_ID__:CE - couponcode'),
       ],
       'token',
       'workspaces/1',

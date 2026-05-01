@@ -157,6 +157,39 @@ export function Step3Input({ measurementId, onEntitiesReady }: Step3InputProps) 
 
       {mode === 'custom' && (
         <>
+          <div className="step3-audit-help">
+            <p>
+              Run the audit script on every page of a full site journey, then paste or
+              upload the resulting JSON below.
+            </p>
+            <a
+              href="dataLayerAudit.js"
+              download="dataLayerAudit.js"
+              className="step3-download"
+            >
+              Download audit script (.js)
+            </a>
+            <details className="step3-howto">
+              <summary>How to run it</summary>
+              <ol>
+                <li>Open DevTools (F12) → <em>Sources</em> → <em>Snippets</em>.</li>
+                <li>
+                  Click <em>New snippet</em>, name it <code>dataLayerAudit</code>, and paste the
+                  contents of the downloaded file.
+                </li>
+                <li>
+                  On every page you visit during the journey, right-click the snippet and choose
+                  <em> Run</em> (or press <kbd>Ctrl/Cmd + Enter</kbd>).
+                </li>
+                <li>
+                  When done, run in the console:{' '}
+                  <code>copy(sessionStorage.getItem('dlEventMap'))</code>
+                </li>
+                <li>Paste the copied JSON below, or save it as <code>.json</code> and upload it.</li>
+              </ol>
+            </details>
+          </div>
+
           <div className="step3-field">
             <label htmlFor="custom-json-textarea">Paste audit JSON</label>
             <textarea
